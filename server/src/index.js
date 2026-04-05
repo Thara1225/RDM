@@ -9,9 +9,21 @@ if (!process.env.JWT_SECRET) {
   throw new Error('JWT_SECRET is required in environment variables');
 }
 
-const server = app.listen(PORT, () => {
-  console.log(`API listening on port ${PORT}`);
-});
+let server;
+
+async function start() {
+  try {
+    await prisma.$connect();
+    console.log('Database connected successfully');
+
+    server = app.listen(PORT, () => {
+      console.log(`API listening on port ${PORT}`);
+    });
+  } catch (error) {
+    console.error('Failed to connect to database', error);
+    process.exit(1);
+  }
+}
 
 let isShuttingDown = false;
 
@@ -22,6 +34,11 @@ async function shutdown(signal) {
 
   isShuttingDown = true;
   console.log(`${signal} received. Shutting down...`);
+
+  if (!server) {
+    process.exit(0);
+    return;
+  }
 
   server.close(async () => {
     try {
@@ -40,3 +57,5 @@ async function shutdown(signal) {
 
 process.on('SIGINT', () => shutdown('SIGINT'));
 process.on('SIGTERM', () => shutdown('SIGTERM'));
+
+start();
