@@ -1,0 +1,71 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+html.theme-dark body {
+  background: #0f172a;
+  color: #e2e8f0;
+}
+
+html.theme-dark .bg-slate-100,
+html.theme-night .bg-slate-100 {
+  background-color: #0b1220 !important;
+}
+
+html.theme-dark .bg-white,
+html.theme-night .bg-white {
+  background-color: #111827 !important;
+}
+
+html.theme-dark .bg-slate-50,
+html.theme-night .bg-slate-50 {
+  background-color: #1f2937 !important;
+}
+
+html.theme-dark .dashboard-stat-card {
+  background-color: #1e293b !important;
+  border-color: #334155 !important;
+}
+
+html.theme-dark .dashboard-stat-label {
+  color: #cbd5e1 !important;
+}
+
+html.theme-dark .dashboard-stat-value {
+  color: #f8fafc !important;
+}
+
+html.theme-dark .text-slate-900,
+html.theme-night .text-slate-900 {
+  color: #f8fafc !important;
+}
+
+html.theme-dark .text-slate-700,
+html.theme-dark .text-slate-600,
+html.theme-night .text-slate-700,
+html.theme-night .text-slate-600 {
+  color: #cbd5e1 !important;
+}
+
+html.theme-dark .border-slate-300,
+html.theme-dark .border-slate-200,
+html.theme-dark .border-slate-100,
+html.theme-night .border-slate-300,
+html.theme-night .border-slate-200,
+html.theme-night .border-slate-100 {
+  border-color: #374151 !important;
+}
+
+html.theme-dark input,
+html.theme-dark select,
+html.theme-dark textarea,
+html.theme-night input,
+html.theme-night select,
+html.theme-night textarea {
+  background-color: #0f172a;
+  color: #e2e8f0;
+}
