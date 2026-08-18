@@ -273,7 +273,7 @@ export default function ShopOrdersPage({ token }) {
   return (
     <div className="space-y-6">
       <header className="rounded-xl bg-white p-6 shadow">
-        <h1 className="text-2xl font-bold text-slate-900">Shop Orders</h1>
+        <h1 className="text-2xl font-bold text-slate-900">Sales</h1>
         <p className="mt-1 text-sm text-slate-600">Create one bill with multiple products, quantities, prices, and total.</p>
       </header>
 
