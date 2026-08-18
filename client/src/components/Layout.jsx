@@ -8,7 +8,7 @@ const modules = [
   { name: 'Materials', path: '/materials', icon: '📦' },
   { name: 'Products', path: '/products', icon: '👗' },
   { name: 'Purchases', path: '/purchases', icon: '📥' },
-  { name: 'Shop Orders', path: '/orders', icon: '📋' },
+  { name: 'Shop Sales', path: '/orders', icon: '📋' },
   { name: 'Bill Amounts', path: '/bill-amounts', icon: '💰' },
   { name: 'Cuttings', path: '/cuttings', icon: '✂️' },
   { name: 'Reports', path: '/reports', icon: '📄' }
