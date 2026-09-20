@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import api from '../services/api';
 import { getApiError } from '../utils/apiError';
 
@@ -11,6 +12,7 @@ const emptyLine = {
 };
 
 export default function ShopOrdersPage({ token }) {
+  const [searchParams] = useSearchParams();
   const [shops, setShops] = useState([]);
   const [products, setProducts] = useState([]);
   const [orders, setOrders] = useState([]);
@@ -20,7 +22,7 @@ export default function ShopOrdersPage({ token }) {
   const [apiError, setApiError] = useState('');
   const [saveError, setSaveError] = useState('');
 
-  const [selectedShopId, setSelectedShopId] = useState('');
+  const [selectedShopId, setSelectedShopId] = useState(() => searchParams.get('shopId') || '');
   const [orderDate, setOrderDate] = useState(today);
   const [status, setStatus] = useState('pending');
   const [notes, setNotes] = useState('');

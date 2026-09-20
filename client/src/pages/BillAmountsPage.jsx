@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
 import { getApiError } from '../utils/apiError';
 
@@ -11,6 +12,7 @@ const emptyPaymentForm = {
 };
 
 export default function BillAmountsPage({ token }) {
+  const navigate = useNavigate();
   const [shopAccounts, setShopAccounts] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [apiError, setApiError] = useState('');
@@ -241,6 +243,9 @@ export default function BillAmountsPage({ token }) {
 
       <section className="rounded-xl bg-white p-6 shadow">
         <h2 className="text-lg font-semibold text-slate-900">Shop Accounts Summary</h2>
+        <p className="mt-1 text-sm text-slate-600">
+          Total Credit comes from bills created in Shop Sales. Delete an incorrect bill there to remove its credit.
+        </p>
 
         {isLoading ? (
           <p className="mt-4 text-sm text-slate-600">Loading...</p>
@@ -255,6 +260,7 @@ export default function BillAmountsPage({ token }) {
                     <th className="px-3 py-2 font-medium text-right">Total Credit</th>
                     <th className="px-3 py-2 font-medium text-right">Total Debit</th>
                     <th className="px-3 py-2 font-medium text-right">Balance</th>
+                    <th className="px-3 py-2 font-medium">Actions</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
@@ -276,6 +282,15 @@ export default function BillAmountsPage({ token }) {
                         }`}
                       >
                         {account.balance.toFixed(2)}
+                      </td>
+                      <td className="px-3 py-2">
+                        <button
+                          className="rounded border border-blue-300 px-2 py-1 text-xs font-medium text-blue-700"
+                          type="button"
+                          onClick={() => navigate(`/orders?shopId=${account.id}`)}
+                        >
+                          Manage Bills
+                        </button>
                       </td>
                     </tr>
                   ))}
