@@ -19,6 +19,7 @@ export default function BillAmountsPage({ token }) {
   const [formError, setFormError] = useState('');
   const [isSaving, setIsSaving] = useState(false);
   const [shops, setShops] = useState([]);
+  const [payments, setPayments] = useState([]);
 
   async function loadShopAccounts() {
     setApiError('');
@@ -43,10 +44,35 @@ export default function BillAmountsPage({ token }) {
     }
   }
 
+  async function loadPayments() {
+    try {
+      const response = await api.get('/shop-payments');
+      setPayments(response.data || []);
+    } catch (error) {
+      setApiError(getApiError(error, 'Failed to load account payments'));
+    }
+  }
+
   useEffect(() => {
     loadShopAccounts();
     loadShops();
+    loadPayments();
   }, [token]);
+
+  async function deletePayment(payment) {
+    const ok = window.confirm(`Delete payment of ${Number(payment.amount).toFixed(2)} for ${payment.shop?.name || 'this shop'}?`);
+    if (!ok) {
+      return;
+    }
+
+    setApiError('');
+    try {
+      await api.delete(`/shop-payments/${payment.id}`);
+      await Promise.all([loadShopAccounts(), loadPayments()]);
+    } catch (error) {
+      setApiError(getApiError(error, 'Failed to delete payment'));
+    }
+  }
 
   async function addPayment(event) {
     event.preventDefault();
@@ -285,6 +311,47 @@ export default function BillAmountsPage({ token }) {
             ) : null}
           </>
         )}
+      </section>
+
+      <section className="rounded-xl bg-white p-6 shadow">
+        <h2 className="text-lg font-semibold text-slate-900">Account Payment Records</h2>
+        <p className="mt-1 text-sm text-slate-600">Delete an incorrect debit/payment here. The shop balance will update automatically.</p>
+
+        {isLoading ? <p className="mt-4 text-sm text-slate-600">Loading...</p> : null}
+
+        <div className="mt-4 overflow-x-auto">
+          <table className="min-w-full divide-y divide-slate-200 text-sm">
+            <thead>
+              <tr className="bg-slate-50 text-left text-slate-600">
+                <th className="px-3 py-2 font-medium">Date</th>
+                <th className="px-3 py-2 font-medium">Shop</th>
+                <th className="px-3 py-2 font-medium">Amount</th>
+                <th className="px-3 py-2 font-medium">Description</th>
+                <th className="px-3 py-2 font-medium">Actions</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-100">
+              {payments.map((payment) => (
+                <tr key={payment.id}>
+                  <td className="px-3 py-2">{new Date(payment.paymentDate).toISOString().slice(0, 10)}</td>
+                  <td className="px-3 py-2">{payment.shop?.name || '-'}</td>
+                  <td className="px-3 py-2">{Number(payment.amount).toFixed(2)}</td>
+                  <td className="px-3 py-2">{payment.description || payment.notes || '-'}</td>
+                  <td className="px-3 py-2">
+                    <button
+                      className="rounded border border-red-300 px-2 py-1 text-xs font-medium text-red-700"
+                      type="button"
+                      onClick={() => deletePayment(payment)}
+                    >
+                      Delete
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          {!payments.length ? <p className="mt-3 text-sm text-slate-600">No payment records found.</p> : null}
+        </div>
       </section>
     </div>
   );

@@ -57,9 +57,18 @@ function createMasterCrudController(modelName, searchableFields = ['name']) {
   async function remove(req, res) {
     const id = Number(req.params.id);
 
-    const exists = await model.findUnique({ where: { id }, select: { id: true } });
+    const exists = await model.findUnique({
+      where: { id },
+      select: modelName === 'shop'
+        ? { id: true, _count: { select: { shopOrders: true, shopPayments: true } } }
+        : { id: true }
+    });
     if (!exists) {
       throw new ApiError(404, 'Record not found');
+    }
+
+    if (modelName === 'shop' && (exists._count.shopOrders > 0 || exists._count.shopPayments > 0)) {
+      throw new ApiError(409, 'Remove this shop\'s sales bills and account payments before deleting the shop');
     }
 
     await model.delete({ where: { id } });

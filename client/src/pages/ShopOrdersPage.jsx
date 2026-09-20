@@ -270,6 +270,21 @@ export default function ShopOrdersPage({ token }) {
     printWindow.print();
   }
 
+  async function deleteBill(bill) {
+    const ok = window.confirm(`Delete bill ${bill.billNo}? This will remove all items in this bill.`);
+    if (!ok) {
+      return;
+    }
+
+    setApiError('');
+    try {
+      await Promise.all(bill.items.map((item) => api.delete(`/shop-orders/${item.id}`)));
+      await loadOrders(selectedShopId);
+    } catch (error) {
+      setApiError(getApiError(error, 'Failed to delete bill'));
+    }
+  }
+
   return (
     <div className="space-y-6">
       <header className="rounded-xl bg-white p-6 shadow">
@@ -494,6 +509,13 @@ export default function ShopOrdersPage({ token }) {
                     onClick={() => printBill(bill)}
                   >
                     Print Invoice
+                  </button>
+                  <button
+                    className="ml-2 rounded border border-red-300 px-3 py-1 text-xs font-medium text-red-700"
+                    type="button"
+                    onClick={() => deleteBill(bill)}
+                  >
+                    Delete Bill
                   </button>
                 </div>
               </div>
