@@ -13,7 +13,9 @@ const emptyForm = {
 const today = new Date().toISOString().slice(0, 10);
 
 const emptyPurchaseForm = {
+  purchaseType: 'material',
   materialId: '',
+  itemName: '',
   quantity: '',
   unitPrice: '',
   purchaseDate: today,
@@ -188,8 +190,15 @@ export default function SuppliersPage({ token }) {
 
     setPurchaseError('');
 
-    if (!purchaseForm.materialId || !purchaseForm.quantity || !purchaseForm.unitPrice || !purchaseForm.purchaseDate) {
-      setPurchaseError('Material, quantity, unit price and date are required');
+    const isMaterialPurchase = purchaseForm.purchaseType === 'material';
+    if (
+      (isMaterialPurchase && !purchaseForm.materialId) ||
+      (!isMaterialPurchase && !purchaseForm.itemName.trim()) ||
+      !purchaseForm.quantity ||
+      !purchaseForm.unitPrice ||
+      !purchaseForm.purchaseDate
+    ) {
+      setPurchaseError(`${isMaterialPurchase ? 'Material' : 'Item name'}, quantity, unit price and date are required`);
       return;
     }
 
@@ -199,7 +208,9 @@ export default function SuppliersPage({ token }) {
         '/purchases',
         {
           supplierId: selectedSupplier.id,
-          materialId: Number(purchaseForm.materialId),
+          ...(isMaterialPurchase
+            ? { materialId: Number(purchaseForm.materialId) }
+            : { itemName: purchaseForm.itemName.trim() }),
           quantity: Number(purchaseForm.quantity),
           unitPrice: Number(purchaseForm.unitPrice),
           purchaseDate: purchaseForm.purchaseDate,
@@ -537,29 +548,59 @@ export default function SuppliersPage({ token }) {
                 Use this to record material and unit price. Totals and material summary will update instantly.
               </p>
               <form className="mt-3 grid gap-3 md:grid-cols-2 lg:grid-cols-5" onSubmit={addPurchaseForSelectedSupplier}>
+                <label className="text-sm font-medium text-slate-700">
+                  Purchase Type
+                  <select
+                    className="mt-1 w-full rounded border border-slate-300 px-3 py-2"
+                    value={purchaseForm.purchaseType}
+                    onChange={(event) =>
+                      setPurchaseForm((prev) => ({
+                        ...prev,
+                        purchaseType: event.target.value,
+                        materialId: '',
+                        itemName: ''
+                      }))
+                    }
+                  >
+                    <option value="material">Material / Fabric</option>
+                    <option value="item">Other Item / Machine</option>
+                  </select>
+                </label>
+
                 <label className="text-sm font-medium text-slate-700 lg:col-span-2">
-                  Material
+                  {purchaseForm.purchaseType === 'material' ? 'Material' : 'Item Name'}
                   <div className="mt-1 flex gap-2">
-                    <select
-                      className="flex-1 rounded border border-slate-300 px-3 py-2"
-                      value={purchaseForm.materialId}
-                      onChange={(event) => setPurchaseForm((prev) => ({ ...prev, materialId: event.target.value }))}
-                    >
-                      <option value="">Select material</option>
-                      {materials.map((material) => (
-                        <option key={material.id} value={material.id}>
-                          {material.name} ({material.unitType})
-                        </option>
-                      ))}
-                    </select>
-                    <button
-                      className="rounded border border-slate-300 px-2 py-1 text-xs font-medium text-slate-700 hover:bg-slate-50"
-                      type="button"
-                      onClick={() => navigate('/materials')}
-                      title="Add new material"
-                    >
-                      + Add
-                    </button>
+                    {purchaseForm.purchaseType === 'material' ? (
+                      <>
+                        <select
+                          className="flex-1 rounded border border-slate-300 px-3 py-2"
+                          value={purchaseForm.materialId}
+                          onChange={(event) => setPurchaseForm((prev) => ({ ...prev, materialId: event.target.value }))}
+                        >
+                          <option value="">Select material</option>
+                          {materials.map((material) => (
+                            <option key={material.id} value={material.id}>
+                              {material.name} ({material.unitType})
+                            </option>
+                          ))}
+                        </select>
+                        <button
+                          className="rounded border border-slate-300 px-2 py-1 text-xs font-medium text-slate-700 hover:bg-slate-50"
+                          type="button"
+                          onClick={() => navigate('/materials')}
+                          title="Add new material"
+                        >
+                          + Add
+                        </button>
+                      </>
+                    ) : (
+                      <input
+                        className="w-full rounded border border-slate-300 px-3 py-2"
+                        placeholder="Machine, button, tools, etc."
+                        value={purchaseForm.itemName}
+                        onChange={(event) => setPurchaseForm((prev) => ({ ...prev, itemName: event.target.value }))}
+                      />
+                    )}
                   </div>
                 </label>
 
