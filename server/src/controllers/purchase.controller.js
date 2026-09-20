@@ -111,10 +111,6 @@ async function updatePurchase(req, res) {
     throw new ApiError(404, 'Purchase not found');
   }
 
-  if (existing.materialId) {
-    throw new ApiError(409, 'Only standalone purchases can be edited here');
-  }
-
   let nextPhotoUrl = existing.photoUrl;
   if (req.file) {
     if (existing.photoUrl) {
@@ -140,13 +136,23 @@ async function updatePurchase(req, res) {
 
   payload.totalPrice = new Prisma.Decimal(nextQuantity).mul(new Prisma.Decimal(nextUnitPrice));
 
-  const updated = await prisma.purchase.update({
-    where: { id },
-    data: payload,
-    include: {
-      supplier: { select: { id: true, name: true } },
-      material: { select: { id: true, name: true, unitType: true } }
+  const updated = await prisma.$transaction(async (tx) => {
+    if (existing.materialId && quantity !== undefined) {
+      const quantityDelta = new Prisma.Decimal(nextQuantity).sub(new Prisma.Decimal(existing.quantity));
+      await tx.stock.updateMany({
+        where: { materialId: existing.materialId },
+        data: { availableQuantity: { increment: quantityDelta } }
+      });
     }
+
+    return tx.purchase.update({
+      where: { id },
+      data: payload,
+      include: {
+        supplier: { select: { id: true, name: true } },
+        material: { select: { id: true, name: true, unitType: true } }
+      }
+    });
   });
 
   return res.status(200).json(updated);

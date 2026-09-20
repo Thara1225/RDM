@@ -46,6 +46,10 @@ export default function SuppliersPage({ token }) {
   const [purchaseForm, setPurchaseForm] = useState(emptyPurchaseForm);
   const [purchaseError, setPurchaseError] = useState('');
   const [isPurchaseSaving, setIsPurchaseSaving] = useState(false);
+  const [editingSummaryMaterialId, setEditingSummaryMaterialId] = useState(null);
+  const [summaryForm, setSummaryForm] = useState({ quantity: '', unitPrice: '', purchaseDate: today, notes: '' });
+  const [summaryError, setSummaryError] = useState('');
+  const [isSummarySaving, setIsSummarySaving] = useState(false);
 
   async function loadSuppliers(activeFilters = {}) {
     setApiError('');
@@ -138,7 +142,9 @@ export default function SuppliersPage({ token }) {
   }
 
   async function deleteSupplier(supplier) {
-    const ok = window.confirm(`Delete supplier \"${supplier.name}\"?`);
+    const ok = window.confirm(
+      `Delete supplier \"${supplier.name}\"? Existing purchase history will be kept without this supplier.`
+    );
     if (!ok) {
       return;
     }
@@ -209,6 +215,53 @@ export default function SuppliersPage({ token }) {
       setPurchaseError(getApiError(error, 'Failed to save purchase'));
     } finally {
       setIsPurchaseSaving(false);
+    }
+  }
+
+  function startSummaryEdit(row) {
+    if (!row.latestPurchase) {
+      setSummaryError('No purchase record is available for this material.');
+      return;
+    }
+
+    setEditingSummaryMaterialId(row.materialId);
+    setSummaryForm({
+      quantity: String(Number(row.latestPurchase.quantity) || ''),
+      unitPrice: String(Number(row.latestPurchase.unitPrice) || ''),
+      purchaseDate: new Date(row.latestPurchase.purchaseDate).toISOString().slice(0, 10),
+      notes: row.latestPurchase.notes || ''
+    });
+    setSummaryError('');
+  }
+
+  async function saveSummaryEdit(event, row) {
+    event.preventDefault();
+    const quantity = Number(summaryForm.quantity);
+    const unitPrice = Number(summaryForm.unitPrice);
+
+    if (!Number.isFinite(quantity) || quantity <= 0 || !Number.isFinite(unitPrice) || unitPrice <= 0) {
+      setSummaryError('Quantity and unit price must be greater than 0');
+      return;
+    }
+
+    setIsSummarySaving(true);
+    setSummaryError('');
+    try {
+      await api.put(`/purchases/${row.latestPurchase.id}`, {
+        quantity,
+        unitPrice,
+        purchaseDate: summaryForm.purchaseDate,
+        notes: summaryForm.notes.trim() || null
+      });
+
+      const refreshed = await api.get(`/suppliers/${selectedSupplier.id}`);
+      setSelectedSupplier(refreshed.data);
+      setEditingSummaryMaterialId(null);
+      await loadSuppliers();
+    } catch (error) {
+      setSummaryError(getApiError(error, 'Failed to update material summary'));
+    } finally {
+      setIsSummarySaving(false);
     }
   }
 
@@ -607,6 +660,7 @@ export default function SuppliersPage({ token }) {
                       <th className="px-3 py-2 font-medium">Unit Price</th>
                       <th className="px-3 py-2 font-medium">Unit</th>
                       <th className="px-3 py-2 font-medium">Total Amount</th>
+                      <th className="px-3 py-2 font-medium">Actions</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100">
@@ -617,10 +671,91 @@ export default function SuppliersPage({ token }) {
                         <td className="px-3 py-2">{row.latestUnitPrice}</td>
                         <td className="px-3 py-2">{row.unitType}</td>
                         <td className="px-3 py-2">{row.totalAmount}</td>
+                        <td className="px-3 py-2">
+                          <button
+                            className="rounded border border-blue-300 px-2 py-1 text-xs font-medium text-blue-700"
+                            type="button"
+                            onClick={() => startSummaryEdit(row)}
+                          >
+                            Edit
+                          </button>
+                        </td>
                       </tr>
                     ))}
                   </tbody>
                 </table>
+                {editingSummaryMaterialId ? (
+                  (() => {
+                    const row = (selectedSupplier.materialSummary || []).find(
+                      (item) => item.materialId === editingSummaryMaterialId
+                    );
+                    if (!row?.latestPurchase) return null;
+
+                    return (
+                      <form className="mt-3 rounded border border-blue-200 bg-blue-50 p-3" onSubmit={(event) => saveSummaryEdit(event, row)}>
+                        <p className="text-sm font-semibold text-slate-900">Edit latest {row.materialName} purchase</p>
+                        <div className="mt-3 grid gap-3 md:grid-cols-4">
+                          <label className="text-sm font-medium text-slate-700">
+                            Quantity
+                            <input
+                              className="mt-1 w-full rounded border border-slate-300 px-3 py-2"
+                              type="number"
+                              min="0.001"
+                              step="0.001"
+                              value={summaryForm.quantity}
+                              onChange={(event) => setSummaryForm((prev) => ({ ...prev, quantity: event.target.value }))}
+                            />
+                          </label>
+                          <label className="text-sm font-medium text-slate-700">
+                            Unit Price
+                            <input
+                              className="mt-1 w-full rounded border border-slate-300 px-3 py-2"
+                              type="number"
+                              min="0.01"
+                              step="0.01"
+                              value={summaryForm.unitPrice}
+                              onChange={(event) => setSummaryForm((prev) => ({ ...prev, unitPrice: event.target.value }))}
+                            />
+                          </label>
+                          <label className="text-sm font-medium text-slate-700">
+                            Purchase Date
+                            <input
+                              className="mt-1 w-full rounded border border-slate-300 px-3 py-2"
+                              type="date"
+                              value={summaryForm.purchaseDate}
+                              onChange={(event) => setSummaryForm((prev) => ({ ...prev, purchaseDate: event.target.value }))}
+                            />
+                          </label>
+                          <label className="text-sm font-medium text-slate-700">
+                            Notes
+                            <input
+                              className="mt-1 w-full rounded border border-slate-300 px-3 py-2"
+                              value={summaryForm.notes}
+                              onChange={(event) => setSummaryForm((prev) => ({ ...prev, notes: event.target.value }))}
+                            />
+                          </label>
+                        </div>
+                        <div className="mt-3 flex gap-2">
+                          <button
+                            className="rounded bg-slate-900 px-3 py-2 text-sm font-medium text-white disabled:opacity-60"
+                            type="submit"
+                            disabled={isSummarySaving}
+                          >
+                            {isSummarySaving ? 'Saving...' : 'Save Changes'}
+                          </button>
+                          <button
+                            className="rounded border border-slate-300 px-3 py-2 text-sm font-medium text-slate-700"
+                            type="button"
+                            onClick={() => setEditingSummaryMaterialId(null)}
+                          >
+                            Cancel
+                          </button>
+                        </div>
+                      </form>
+                    );
+                  })()
+                ) : null}
+                {summaryError ? <p className="mt-2 text-sm text-red-600">{summaryError}</p> : null}
                 {(selectedSupplier.materialSummary || []).length === 0 ? (
                   <p className="mt-2 text-sm text-slate-600">No material purchase data.</p>
                 ) : null}

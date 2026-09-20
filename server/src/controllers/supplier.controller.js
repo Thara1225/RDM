@@ -140,8 +140,12 @@ async function getSupplierById(req, res) {
         },
         orderBy: [{ purchaseDate: 'desc' }, { id: 'desc' }],
         select: {
+          id: true,
           materialId: true,
-          unitPrice: true
+          quantity: true,
+          unitPrice: true,
+          purchaseDate: true,
+          notes: true
         }
       })
     : [];
@@ -179,7 +183,8 @@ async function getSupplierById(req, res) {
         totalQuantity: group._sum.quantity || 0,
         latestUnitPrice: latestUnitPriceByMaterial.get(group.materialId) || 0,
         totalAmount: group._sum.totalPrice || 0,
-        purchaseCount: group._count._all
+        purchaseCount: group._count._all,
+        latestPurchase: latestMaterialPurchases.find((purchase) => purchase.materialId === group.materialId) || null
       };
     })
     .filter(Boolean)
@@ -226,20 +231,20 @@ async function deleteSupplier(req, res) {
 
   const supplier = await prisma.supplier.findUnique({
     where: { id },
-    include: {
-      _count: { select: { purchases: true } }
-    }
+    select: { id: true }
   });
 
   if (!supplier) {
     throw new ApiError(404, 'Supplier not found');
   }
 
-  if (supplier._count.purchases > 0) {
-    throw new ApiError(409, 'Cannot delete supplier with existing purchase records');
-  }
-
-  await prisma.supplier.delete({ where: { id } });
+  await prisma.$transaction(async (tx) => {
+    await tx.purchase.updateMany({
+      where: { supplierId: id },
+      data: { supplierId: null }
+    });
+    await tx.supplier.delete({ where: { id } });
+  });
   return res.status(200).json({ message: 'Deleted successfully' });
 }
 

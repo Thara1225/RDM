@@ -54,8 +54,8 @@ This project is an admin-only web system for:
    - cuttings decrease (to be implemented next)
    - adjustments correct
 - Deletion behavior is restrictive by default:
-   - referenced records cannot be hard-deleted (enforced by DB FK and API 409 response)
-   - soft delete can be added later if needed
+   - supplier deletion preserves purchase history and clears its supplier reference
+   - other referenced records cannot be hard-deleted (enforced by DB FK and API 409 response)
 
 ## Next Build Order
 1. Validate DB credentials and run migration + seed on a real PostgreSQL instance
