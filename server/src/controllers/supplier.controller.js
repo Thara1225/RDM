@@ -111,7 +111,6 @@ async function getSupplierById(req, res) {
     prisma.purchase.findMany({
       where: { supplierId: id },
       orderBy: { purchaseDate: 'desc' },
-      take: 5,
       include: {
         material: { select: { id: true, name: true, unitType: true } }
       }

@@ -218,23 +218,18 @@ export default function SuppliersPage({ token }) {
     }
   }
 
-  function startSummaryEdit(row) {
-    if (!row.latestPurchase) {
-      setSummaryError('No purchase record is available for this material.');
-      return;
-    }
-
-    setEditingSummaryMaterialId(row.materialId);
+  function startSummaryEdit(purchase) {
+    setEditingSummaryMaterialId(purchase.id);
     setSummaryForm({
-      quantity: String(Number(row.latestPurchase.quantity) || ''),
-      unitPrice: String(Number(row.latestPurchase.unitPrice) || ''),
-      purchaseDate: new Date(row.latestPurchase.purchaseDate).toISOString().slice(0, 10),
-      notes: row.latestPurchase.notes || ''
+      quantity: String(Number(purchase.quantity) || ''),
+      unitPrice: String(Number(purchase.unitPrice) || ''),
+      purchaseDate: new Date(purchase.purchaseDate).toISOString().slice(0, 10),
+      notes: purchase.notes || ''
     });
     setSummaryError('');
   }
 
-  async function saveSummaryEdit(event, row) {
+  async function saveSummaryEdit(event, purchase) {
     event.preventDefault();
     const quantity = Number(summaryForm.quantity);
     const unitPrice = Number(summaryForm.unitPrice);
@@ -247,7 +242,7 @@ export default function SuppliersPage({ token }) {
     setIsSummarySaving(true);
     setSummaryError('');
     try {
-      await api.put(`/purchases/${row.latestPurchase.id}`, {
+      await api.put(`/purchases/${purchase.id}`, {
         quantity,
         unitPrice,
         purchaseDate: summaryForm.purchaseDate,
@@ -655,6 +650,7 @@ export default function SuppliersPage({ token }) {
                 <table className="min-w-full divide-y divide-slate-200 text-sm">
                   <thead>
                     <tr className="bg-slate-50 text-left text-slate-600">
+                      <th className="px-3 py-2 font-medium">Date</th>
                       <th className="px-3 py-2 font-medium">Material</th>
                       <th className="px-3 py-2 font-medium">Qty</th>
                       <th className="px-3 py-2 font-medium">Unit Price</th>
@@ -664,18 +660,19 @@ export default function SuppliersPage({ token }) {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100">
-                    {(selectedSupplier.materialSummary || []).map((row) => (
-                      <tr key={row.materialId}>
-                        <td className="px-3 py-2">{row.materialName}</td>
-                        <td className="px-3 py-2">{row.totalQuantity}</td>
-                        <td className="px-3 py-2">{row.latestUnitPrice}</td>
-                        <td className="px-3 py-2">{row.unitType}</td>
-                        <td className="px-3 py-2">{row.totalAmount}</td>
+                    {(selectedSupplier.recentPurchases || []).map((purchase) => (
+                      <tr key={purchase.id}>
+                        <td className="px-3 py-2">{new Date(purchase.purchaseDate).toISOString().slice(0, 10)}</td>
+                        <td className="px-3 py-2">{purchase.material?.name || purchase.itemName || '-'}</td>
+                        <td className="px-3 py-2">{purchase.quantity}</td>
+                        <td className="px-3 py-2">{purchase.unitPrice}</td>
+                        <td className="px-3 py-2">{purchase.material?.unitType || '-'}</td>
+                        <td className="px-3 py-2">{purchase.totalPrice}</td>
                         <td className="px-3 py-2">
                           <button
                             className="rounded border border-blue-300 px-2 py-1 text-xs font-medium text-blue-700"
                             type="button"
-                            onClick={() => startSummaryEdit(row)}
+                            onClick={() => startSummaryEdit(purchase)}
                           >
                             Edit
                           </button>
@@ -686,14 +683,14 @@ export default function SuppliersPage({ token }) {
                 </table>
                 {editingSummaryMaterialId ? (
                   (() => {
-                    const row = (selectedSupplier.materialSummary || []).find(
-                      (item) => item.materialId === editingSummaryMaterialId
+                    const purchase = (selectedSupplier.recentPurchases || []).find(
+                      (item) => item.id === editingSummaryMaterialId
                     );
-                    if (!row?.latestPurchase) return null;
+                    if (!purchase) return null;
 
                     return (
-                      <form className="mt-3 rounded border border-blue-200 bg-blue-50 p-3" onSubmit={(event) => saveSummaryEdit(event, row)}>
-                        <p className="text-sm font-semibold text-slate-900">Edit latest {row.materialName} purchase</p>
+                      <form className="mt-3 rounded border border-blue-200 bg-blue-50 p-3" onSubmit={(event) => saveSummaryEdit(event, purchase)}>
+                        <p className="text-sm font-semibold text-slate-900">Edit purchase for {purchase.material?.name || purchase.itemName || 'item'}</p>
                         <div className="mt-3 grid gap-3 md:grid-cols-4">
                           <label className="text-sm font-medium text-slate-700">
                             Quantity
@@ -756,8 +753,8 @@ export default function SuppliersPage({ token }) {
                   })()
                 ) : null}
                 {summaryError ? <p className="mt-2 text-sm text-red-600">{summaryError}</p> : null}
-                {(selectedSupplier.materialSummary || []).length === 0 ? (
-                  <p className="mt-2 text-sm text-slate-600">No material purchase data.</p>
+                {(selectedSupplier.recentPurchases || []).length === 0 ? (
+                  <p className="mt-2 text-sm text-slate-600">No purchase bills found.</p>
                 ) : null}
               </div>
             </div>
