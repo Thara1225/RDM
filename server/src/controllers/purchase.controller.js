@@ -163,15 +163,11 @@ async function deletePurchase(req, res) {
 
   const existing = await prisma.purchase.findUnique({
     where: { id },
-    select: { id: true, materialId: true, photoUrl: true }
+    select: { id: true, materialId: true, quantity: true, photoUrl: true }
   });
 
   if (!existing) {
     throw new ApiError(404, 'Purchase not found');
-  }
-
-  if (existing.materialId) {
-    throw new ApiError(409, 'Only standalone purchases can be deleted here');
   }
 
   if (existing.photoUrl) {
@@ -181,7 +177,16 @@ async function deletePurchase(req, res) {
     }
   }
 
-  await prisma.purchase.delete({ where: { id } });
+  await prisma.$transaction(async (tx) => {
+    if (existing.materialId) {
+      await tx.stock.updateMany({
+        where: { materialId: existing.materialId },
+        data: { availableQuantity: { decrement: existing.quantity } }
+      });
+    }
+
+    await tx.purchase.delete({ where: { id } });
+  });
   return res.status(200).json({ message: 'Deleted successfully' });
 }
 

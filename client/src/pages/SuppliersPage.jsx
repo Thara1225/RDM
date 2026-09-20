@@ -271,6 +271,27 @@ export default function SuppliersPage({ token }) {
     }
   }
 
+  async function deleteSummaryPurchase(purchase) {
+    const itemName = purchase.material?.name || purchase.itemName || 'this purchase';
+    const ok = window.confirm(`Delete ${itemName} purchase from ${new Date(purchase.purchaseDate).toISOString().slice(0, 10)}?`);
+    if (!ok) {
+      return;
+    }
+
+    setSummaryError('');
+    try {
+      await api.delete(`/purchases/${purchase.id}`);
+      const refreshed = await api.get(`/suppliers/${selectedSupplier.id}`);
+      setSelectedSupplier(refreshed.data);
+      if (editingSummaryMaterialId === purchase.id) {
+        setEditingSummaryMaterialId(null);
+      }
+      await loadSuppliers();
+    } catch (error) {
+      setSummaryError(getApiError(error, 'Failed to delete purchase'));
+    }
+  }
+
   return (
     <div className="space-y-6">
       <header className="rounded-xl bg-white p-6 shadow">
@@ -716,6 +737,13 @@ export default function SuppliersPage({ token }) {
                             onClick={() => startSummaryEdit(purchase)}
                           >
                             Edit
+                          </button>
+                          <button
+                            className="ml-2 rounded border border-red-300 px-2 py-1 text-xs font-medium text-red-700"
+                            type="button"
+                            onClick={() => deleteSummaryPurchase(purchase)}
+                          >
+                            Delete
                           </button>
                         </td>
                       </tr>
