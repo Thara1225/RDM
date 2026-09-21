@@ -74,7 +74,7 @@ async function listPurchases(req, res) {
   const where = {
     ...(supplierId ? { supplierId: Number(supplierId) } : {}),
     ...(materialId ? { materialId: Number(materialId) } : {}),
-    ...(scope === 'standalone' ? { materialId: null } : {}),
+    ...(scope === 'standalone' ? { materialId: null, supplierId: null } : {}),
     ...(scope === 'material' ? { materialId: { not: null } } : {}),
     ...(fromDate || toDate
       ? {

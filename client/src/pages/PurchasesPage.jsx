@@ -37,7 +37,7 @@ export default function PurchasesPage({ token }) {
 
     try {
       const response = await api.get('/purchases', {
-        params: { scope: 'all' }
+        params: { scope: 'standalone' }
       });
       setPurchases(response.data || []);
     } catch (error) {
@@ -280,10 +280,10 @@ export default function PurchasesPage({ token }) {
 
         <section className="rounded-xl bg-white p-6 shadow">
           <div className="flex items-center justify-between gap-3">
-            <h2 className="text-lg font-semibold text-slate-900">All Purchase Records</h2>
+            <h2 className="text-lg font-semibold text-slate-900">Non-Garment Asset Purchases</h2>
             <p className="text-sm text-slate-600">Total Amount: {totalAmount.toFixed(2)}</p>
           </div>
-          <p className="mt-1 text-xs text-slate-500">Purchases added here and from supplier pages are shown here.</p>
+          <p className="mt-1 text-xs text-slate-500">Only standalone assets added from this page are shown here.</p>
 
           {isLoading ? <p className="mt-4 text-sm text-slate-600">Loading...</p> : null}
 
@@ -293,8 +293,6 @@ export default function PurchasesPage({ token }) {
                 <tr className="bg-slate-50 text-left text-slate-600">
                   <th className="px-3 py-2 font-medium">Photo</th>
                   <th className="px-3 py-2 font-medium">Item</th>
-                  <th className="px-3 py-2 font-medium">Supplier</th>
-                  <th className="px-3 py-2 font-medium">Type</th>
                   <th className="px-3 py-2 font-medium">Qty</th>
                   <th className="px-3 py-2 font-medium">Rate</th>
                   <th className="px-3 py-2 font-medium">Amount</th>
@@ -313,8 +311,6 @@ export default function PurchasesPage({ token }) {
                       )}
                     </td>
                     <td className="px-3 py-2">{row.material?.name || row.itemName || '-'}</td>
-                    <td className="px-3 py-2">{row.supplier?.name || '-'}</td>
-                    <td className="px-3 py-2">{row.material ? `Material (${row.material.unitType})` : 'Other Item'}</td>
                     <td className="px-3 py-2">{Number(row.quantity).toFixed(3)}</td>
                     <td className="px-3 py-2">{Number(row.unitPrice).toFixed(2)}</td>
                     <td className="px-3 py-2">{Number(row.totalPrice).toFixed(2)}</td>
