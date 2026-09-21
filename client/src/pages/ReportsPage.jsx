@@ -191,11 +191,53 @@ function downloadPdf(reportData, filters) {
   sectionTableToPdf(
     doc,
     'Purchases By Date',
-    ['Date', 'Item', 'Amount'],
+    ['Date', 'Item', 'Supplier', 'Type', 'Qty', 'Unit Price', 'Amount'],
     (reportData.purchasesByDate || []).map((row) => [
       asDate(row.purchaseDate),
       row.itemName || row.material?.name || '-',
+      row.supplier?.name || '-',
+      row.material ? `Material (${row.material.unitType})` : 'Other Item',
+      asNumber(row.quantity).toFixed(3),
+      asNumber(row.unitPrice).toFixed(2),
       asNumber(row.totalPrice).toFixed(2)
+    ])
+  );
+
+  sectionTableToPdf(
+    doc,
+    'All Shop Sales Bills',
+    ['Date', 'Shop', 'Bill No', 'Status', 'Items', 'Total'],
+    (reportData.shopWiseBills || []).map((row) => [
+      asDate(row.orderDate),
+      row.shopName || '-',
+      row.billNo || '-',
+      row.status || '-',
+      String(row.itemCount || 0),
+      asNumber(row.totalAmount).toFixed(2)
+    ])
+  );
+
+  sectionTableToPdf(
+    doc,
+    'All Shop Account Payments',
+    ['Date', 'Shop', 'Description', 'Amount'],
+    (reportData.paymentsReceived || []).map((row) => [
+      asDate(row.paymentDate),
+      row.shop?.name || '-',
+      row.description || row.notes || '-',
+      asNumber(row.amount).toFixed(2)
+    ])
+  );
+
+  sectionTableToPdf(
+    doc,
+    'Current Stock',
+    ['Material', 'Unit', 'Available', 'Minimum Level'],
+    (reportData.stockSummary || []).map((row) => [
+      row.material?.name || '-',
+      row.material?.unitType || '-',
+      asNumber(row.availableQuantity).toFixed(3),
+      asNumber(row.minStockLevel).toFixed(3)
     ])
   );
 

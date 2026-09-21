@@ -369,7 +369,7 @@ export default function ShopOrdersPage({ token }) {
                   <option value="">Select product</option>
                   {products.map((product) => (
                     <option key={product.id} value={product.id}>
-                      {product.name}
+                      {product.name}{product.dressCode ? ` (Dress Code: ${product.dressCode})` : ''}
                     </option>
                   ))}
                 </select>
