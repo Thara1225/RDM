@@ -118,6 +118,16 @@ function downloadExcel(reportData) {
       }))
     },
     {
+      name: 'Product List',
+      rows: (reportData.products || []).map((row) => ({
+        Product: row.name || '-',
+        DressCode: row.dressCode || '-',
+        Category: row.category || '-',
+        StockQty: asNumber(row.stockQty),
+        Description: row.description || '-'
+      }))
+    },
+    {
       name: 'Shop Bills',
       rows: (reportData.shopWiseBills || []).map((row) => ({
         Shop: row.shopName || '-',
@@ -140,20 +150,6 @@ function downloadExcel(reportData) {
         BalanceDue: asNumber(row.balanceDue)
       }))
     },
-    {
-      name: 'Most Used Materials',
-      rows: (reportData.mostUsedMaterials || []).map((row) => ({
-        Material: row.materialName || '-',
-        ClothUsed: asNumber(row.totalClothUsed)
-      }))
-    },
-    {
-      name: 'Most Produced Garments',
-      rows: (reportData.mostProducedGarments || []).map((row) => ({
-        Product: row.productName || '-',
-        ProducedQty: asNumber(row.totalProducedQty)
-      }))
-    }
   ];
 
   for (const config of sheetConfigs) {
@@ -167,11 +163,12 @@ function downloadExcel(reportData) {
 
 function sectionTableToPdf(doc, title, head, body) {
   doc.setFontSize(12);
-  doc.text(title, 14, doc.lastAutoTable ? doc.lastAutoTable.finalY + 12 : 18);
+  const titleY = doc.lastAutoTable ? doc.lastAutoTable.finalY + 12 : 30;
+  doc.text(title, 14, titleY);
   autoTable(doc, {
     head: [head],
-    body: body.length ? body : [['No data']],
-    startY: doc.lastAutoTable ? doc.lastAutoTable.finalY + 14 : 22,
+    body: body.length ? body : [head.map((_, index) => (index === 0 ? 'No data' : ''))],
+    startY: titleY + 4,
     styles: { fontSize: 8 }
   });
 }
@@ -243,6 +240,19 @@ function downloadPdf(reportData, filters) {
 
   sectionTableToPdf(
     doc,
+    'Product List',
+    ['Product', 'Dress Code', 'Category', 'Stock Qty', 'Description'],
+    (reportData.products || []).map((row) => [
+      row.name || '-',
+      row.dressCode || '-',
+      row.category || '-',
+      asNumber(row.stockQty).toFixed(0),
+      row.description || '-'
+    ])
+  );
+
+  sectionTableToPdf(
+    doc,
     'Balance Due By Shop',
     ['Shop', 'Bills', 'Payments', 'Balance Due'],
     (reportData.balanceDueByShop || []).map((row) => [
@@ -251,24 +261,6 @@ function downloadPdf(reportData, filters) {
       asNumber(row.totalPayments).toFixed(2),
       asNumber(row.balanceDue).toFixed(2)
     ])
-  );
-
-  sectionTableToPdf(
-    doc,
-    'Top Materials / Garments',
-    ['Type', 'Name', 'Value'],
-    [
-      ...(reportData.mostUsedMaterials || []).slice(0, 5).map((row) => [
-        'Material',
-        row.materialName || '-',
-        asNumber(row.totalClothUsed).toFixed(3)
-      ]),
-      ...(reportData.mostProducedGarments || []).slice(0, 5).map((row) => [
-        'Garment',
-        row.productName || '-',
-        asNumber(row.totalProducedQty)
-      ])
-    ]
   );
 
   doc.save(`rdm-reports-${today}.pdf`);
@@ -293,6 +285,7 @@ export default function ReportsPage({ token }) {
     purchasesByDate: [],
     cuttingsByDate: [],
     stockSummary: [],
+    products: [],
     shopWiseBills: [],
     paymentsReceived: [],
     balanceDueByShop: [],
@@ -356,22 +349,6 @@ export default function ReportsPage({ token }) {
       .sort((a, b) => b.balanceDue - a.balanceDue)
       .slice(0, 10),
     [reportData.balanceDueByShop]
-  );
-
-  const topMaterials = useMemo(
-    () => (reportData.mostUsedMaterials || []).map((row) => ({
-      name: compactName(row.materialName),
-      clothUsed: asNumber(row.totalClothUsed)
-    })).slice(0, 10),
-    [reportData.mostUsedMaterials]
-  );
-
-  const topGarments = useMemo(
-    () => (reportData.mostProducedGarments || []).map((row) => ({
-      name: compactName(row.productName),
-      producedQty: asNumber(row.totalProducedQty)
-    })).slice(0, 10),
-    [reportData.mostProducedGarments]
   );
 
   const totalPurchases = useMemo(
@@ -621,33 +598,6 @@ export default function ReportsPage({ token }) {
           )}
         </ChartCard>
 
-        <ChartCard title="Most-Used Materials">
-          {topMaterials.length === 0 ? <EmptyChart /> : (
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={topMaterials}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="name" />
-                <YAxis />
-                <Tooltip />
-                <Bar dataKey="clothUsed" fill="#0891b2" name="Cloth Used" />
-              </BarChart>
-            </ResponsiveContainer>
-          )}
-        </ChartCard>
-
-        <ChartCard title="Most-Produced Garments">
-          {topGarments.length === 0 ? <EmptyChart /> : (
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={topGarments}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="name" />
-                <YAxis />
-                <Tooltip />
-                <Bar dataKey="producedQty" fill="#2563eb" name="Produced Qty" />
-              </BarChart>
-            </ResponsiveContainer>
-          )}
-        </ChartCard>
       </section>
     </div>
   );

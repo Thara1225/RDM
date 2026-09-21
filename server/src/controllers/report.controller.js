@@ -46,7 +46,8 @@ async function getReports(req, res) {
     creditByShop,
     debitByShop,
     mostUsedMaterialsRaw,
-    mostProducedGarmentsRaw
+    mostProducedGarmentsRaw,
+    productList
   ] = await Promise.all([
     prisma.purchase.findMany({
       where: purchasesWhere,
@@ -119,6 +120,9 @@ async function getReports(req, res) {
       _count: {
         _all: true
       }
+    }),
+    prisma.product.findMany({
+      orderBy: { name: 'asc' }
     })
   ]);
 
@@ -248,6 +252,7 @@ async function getReports(req, res) {
     shopWiseBills,
     paymentsReceived,
     balanceDueByShop,
+    products: productList,
     mostUsedMaterials,
     mostProducedGarments
   });
