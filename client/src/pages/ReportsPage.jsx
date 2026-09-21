@@ -389,6 +389,10 @@ export default function ReportsPage({ token }) {
         api.get('/reports', { params: previousMonth })
       ]);
 
+      if (!mainResponse.data || !Array.isArray(mainResponse.data.purchasesByDate)) {
+        throw new Error('Reports data is unavailable. Check the deployed backend API URL.');
+      }
+
       setReportData(mainResponse.data || {});
 
       const currentSales = (currentResponse.data?.shopWiseBills || []).reduce((sum, row) => sum + asNumber(row.totalAmount), 0);
@@ -463,11 +467,11 @@ export default function ReportsPage({ token }) {
             Reset
           </button>
 
-          <button className="rounded border border-blue-300 px-4 py-2 text-sm font-medium text-blue-700" type="button" onClick={() => downloadPdf(reportData, filters)}>
+          <button className="rounded border border-blue-300 px-4 py-2 text-sm font-medium text-blue-700 disabled:opacity-50" type="button" disabled={isLoading || Boolean(apiError)} onClick={() => downloadPdf(reportData, filters)}>
             Export PDF
           </button>
 
-          <button className="rounded border border-emerald-300 px-4 py-2 text-sm font-medium text-emerald-700" type="button" onClick={() => downloadExcel(reportData)}>
+          <button className="rounded border border-emerald-300 px-4 py-2 text-sm font-medium text-emerald-700 disabled:opacity-50" type="button" disabled={isLoading || Boolean(apiError)} onClick={() => downloadExcel(reportData)}>
             Export Excel
           </button>
         </div>

@@ -16,7 +16,13 @@ api.interceptors.request.use((config) => {
 });
 
 api.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    const contentType = response.headers?.['content-type'] || '';
+    if (contentType.includes('text/html') && typeof response.data === 'string') {
+      return Promise.reject(new Error('API response is not configured. Set VITE_API_BASE_URL to the deployed backend URL.'));
+    }
+    return response;
+  },
   (error) => {
     const status = error?.response?.status;
     if (status === 401 && typeof window !== 'undefined') {
