@@ -19,6 +19,10 @@ router.get('/', (_req, res) => {
   res.status(200).json({ message: 'RDM API v1' });
 });
 
+router.get('/health', (_req, res) => {
+  res.status(200).json({ ok: true, message: 'Server is running' });
+});
+
 router.use('/auth', authRoutes);
 
 router.use(requireAuth);
