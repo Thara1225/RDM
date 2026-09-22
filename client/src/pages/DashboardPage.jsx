@@ -1,8 +1,10 @@
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
 import { getApiError } from '../utils/apiError';
 
 export default function DashboardPage({ token }) {
+  const navigate = useNavigate();
   const [stats, setStats] = useState({
     suppliers: 0,
     shops: 0,
@@ -15,6 +17,10 @@ export default function DashboardPage({ token }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [lowStockItems, setLowStockItems] = useState([]);
+  const [systemStatus, setSystemStatus] = useState('checking');
+
+  const reportMonthKey = `rdm_report_downloaded_${new Date().toISOString().slice(0, 7)}`;
+  const reportDownloadedThisMonth = Boolean(localStorage.getItem(reportMonthKey));
 
   async function loadStats() {
     setError('');
@@ -54,6 +60,26 @@ export default function DashboardPage({ token }) {
     loadStats();
   }, [token]);
 
+  useEffect(() => {
+    let mounted = true;
+
+    async function checkSystemHealth() {
+      try {
+        await api.get('/health');
+        if (mounted) setSystemStatus('online');
+      } catch (_error) {
+        if (mounted) setSystemStatus('offline');
+      }
+    }
+
+    checkSystemHealth();
+    const intervalId = window.setInterval(checkSystemHealth, 60000);
+    return () => {
+      mounted = false;
+      window.clearInterval(intervalId);
+    };
+  }, [token]);
+
   const cards = [
     { label: 'Suppliers', value: stats.suppliers, color: 'bg-blue-50 border-blue-200' },
     { label: 'Shops', value: stats.shops, color: 'bg-green-50 border-green-200' },
@@ -79,6 +105,40 @@ export default function DashboardPage({ token }) {
           </button>
         </div>
       ) : null}
+
+      <section className="rounded-xl bg-white p-6 shadow">
+        <div className="flex items-center justify-between gap-3">
+          <h2 className="text-lg font-semibold text-slate-900">Notifications</h2>
+          <span className={`text-sm font-medium ${systemStatus === 'online' ? 'text-green-700' : systemStatus === 'offline' ? 'text-red-700' : 'text-slate-500'}`}>
+            System: {systemStatus === 'checking' ? 'Checking...' : systemStatus === 'online' ? 'Online' : 'Unavailable'}
+          </span>
+        </div>
+
+        <div className="mt-3 space-y-2 text-sm">
+          {systemStatus === 'offline' ? (
+            <div className="rounded border border-red-200 bg-red-50 px-3 py-2 text-red-700">
+              The system API is unavailable. Save your work and try again when the system is online.
+            </div>
+          ) : null}
+
+          {!reportDownloadedThisMonth ? (
+            <div className="flex flex-wrap items-center justify-between gap-3 rounded border border-amber-200 bg-amber-50 px-3 py-2 text-amber-800">
+              <span>Monthly report has not been downloaded for {new Date().toLocaleString('default', { month: 'long', year: 'numeric' })}.</span>
+              <button
+                className="rounded border border-amber-400 px-3 py-1 text-xs font-medium text-amber-900"
+                type="button"
+                onClick={() => navigate('/reports')}
+              >
+                Open Reports
+              </button>
+            </div>
+          ) : (
+            <p className="rounded border border-green-200 bg-green-50 px-3 py-2 text-green-700">
+              Monthly report downloaded for {new Date().toLocaleString('default', { month: 'long', year: 'numeric' })}.
+            </p>
+          )}
+        </div>
+      </section>
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         {cards.map((card) => (

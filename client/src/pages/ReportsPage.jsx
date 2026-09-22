@@ -159,6 +159,7 @@ function downloadExcel(reportData) {
   }
 
   XLSX.writeFile(wb, `rdm-reports-${today}.xlsx`);
+  localStorage.setItem(`rdm_report_downloaded_${today.slice(0, 7)}`, new Date().toISOString());
 }
 
 function sectionTableToPdf(doc, title, head, body) {
@@ -264,6 +265,7 @@ function downloadPdf(reportData, filters) {
   );
 
   doc.save(`rdm-reports-${today}.pdf`);
+  localStorage.setItem(`rdm_report_downloaded_${today.slice(0, 7)}`, new Date().toISOString());
 }
 
 function ChartCard({ title, children }) {
