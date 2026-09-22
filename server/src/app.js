@@ -49,6 +49,10 @@ app.get('/health', (_req, res) => {
   res.status(200).json({ ok: true, message: 'Server is running' });
 });
 
+app.get('/api/health', (_req, res) => {
+  res.status(200).json({ ok: true, message: 'Server is running' });
+});
+
 app.use('/api', apiRouter);
 app.use((req, res) => {
   res.status(404).json({
