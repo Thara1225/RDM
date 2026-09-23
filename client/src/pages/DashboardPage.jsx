@@ -81,13 +81,13 @@ export default function DashboardPage({ token }) {
   }, [token]);
 
   const cards = [
-    { label: 'Suppliers', value: stats.suppliers, color: 'bg-blue-50 border-blue-200' },
-    { label: 'Shops', value: stats.shops, color: 'bg-green-50 border-green-200' },
-    { label: 'Materials', value: stats.materials, color: 'bg-purple-50 border-purple-200' },
-    { label: 'Products', value: stats.products, color: 'bg-pink-50 border-pink-200' },
-    { label: 'Purchases', value: stats.purchases, color: 'bg-yellow-50 border-yellow-200' },
-    { label: 'Cuttings', value: stats.cuttings, color: 'bg-orange-50 border-orange-200' },
-    { label: 'Stock Items', value: stats.stock, color: 'bg-indigo-50 border-indigo-200' }
+    { label: 'Suppliers', value: stats.suppliers, path: '/suppliers', color: 'stat-card-blue' },
+    { label: 'Shops', value: stats.shops, path: '/shops', color: 'stat-card-green' },
+    { label: 'Materials', value: stats.materials, path: '/materials', color: 'stat-card-lilac' },
+    { label: 'Products', value: stats.products, path: '/products', color: 'stat-card-rose' },
+    { label: 'Purchases', value: stats.purchases, path: '/purchases', color: 'stat-card-gold' },
+    { label: 'Cuttings', value: stats.cuttings, path: '/cuttings', color: 'stat-card-peach' },
+    { label: 'Stock Items', value: stats.stock, path: '/stock', color: 'stat-card-blue' }
   ];
 
   return (
@@ -142,14 +142,20 @@ export default function DashboardPage({ token }) {
 
       <div className="dashboard-stat-grid">
         {cards.map((card) => (
-          <div key={card.label} className={`dashboard-stat-card ${card.color}`}>
+          <button
+            key={card.label}
+            className={`dashboard-stat-card ${card.color}`}
+            type="button"
+            onClick={() => navigate(card.path)}
+            aria-label={`Open ${card.label}`}
+          >
             <p className="dashboard-stat-label">{card.label}</p>
             {loading ? (
               <p className="dashboard-stat-value">...</p>
             ) : (
               <p className="dashboard-stat-value">{card.value}</p>
             )}
-          </div>
+          </button>
         ))}
       </div>
 

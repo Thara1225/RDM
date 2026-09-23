@@ -6,6 +6,7 @@ const modules = [
   { name: 'Suppliers', path: '/suppliers', icon: '🏭' },
   { name: 'Shops', path: '/shops', icon: '🛍️' },
   { name: 'Materials', path: '/materials', icon: '📦' },
+  { name: 'Stock', path: '/stock', icon: '🏷️' },
   { name: 'Products', path: '/products', icon: '👗' },
   { name: 'Purchases', path: '/purchases', icon: '📥' },
   { name: 'Shop Sales', path: '/orders', icon: '📋' },

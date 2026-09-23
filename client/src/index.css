@@ -256,9 +256,11 @@ html.theme-night textarea {
 .notice-error { border-color: #d58a84; background: #fff0ee; color: #a54540; }
 .dashboard-inline-button { border: 1px solid #f2a93b; border-radius: 8px; padding: 6px 10px; color: #825b12; font-size: 12px; font-weight: 700; }
 .dashboard-stat-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; }
-.dashboard-stat-card { min-height: 124px; border: 2px dashed #9a5877; border-radius: 24px; padding: 21px 22px; box-shadow: 0 7px 0 rgba(32, 18, 27, 0.4); }
-.dashboard-stat-card:nth-child(1) { background: #2c385a; } .dashboard-stat-card:nth-child(2) { background: #21453f; } .dashboard-stat-card:nth-child(3) { background: #443653; } .dashboard-stat-card:nth-child(4) { background: #4d2d3e; } .dashboard-stat-card:nth-child(5) { background: #4b4527; } .dashboard-stat-card:nth-child(6) { background: #4c3026; } .dashboard-stat-card:nth-child(7) { background: #2c385a; }
-.dashboard-stat-label { color: #465b7f; font-size: 15px; font-weight: 800; }
+.dashboard-stat-card { min-height: 124px; border: 2px dashed #f2a93b; border-radius: 24px; padding: 21px 22px; box-shadow: 0 7px 0 rgba(63, 111, 216, 0.15); text-align: left; transition: transform 160ms ease, box-shadow 160ms ease; }
+.dashboard-stat-card:hover { transform: translateY(-3px); box-shadow: 0 10px 0 rgba(63, 111, 216, 0.2); }
+.dashboard-stat-card:focus-visible { outline: 3px solid #3f6fd8; outline-offset: 3px; }
+.stat-card-blue { background: #dbe8ff; } .stat-card-green { background: #d9f0e6; } .stat-card-lilac { background: #e9e0f7; } .stat-card-rose { background: #f7dce8; } .stat-card-gold { background: #f8edc8; } .stat-card-peach { background: #f8dfd1; }
+.dashboard-stat-label { color: #29446e; font-size: 15px; font-weight: 800; }
 .dashboard-stat-value { margin-top: 6px; color: #182b4d; font-size: 42px; font-weight: 800; line-height: 1; }
 .products-workspace { display: grid; grid-template-columns: minmax(300px, 0.8fr) minmax(0, 1.35fr); align-items: start; gap: 18px; }
 .products-form-panel, .products-list-panel { min-width: 0; }
