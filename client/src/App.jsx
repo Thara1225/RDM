@@ -18,7 +18,14 @@ import ChangePasswordPage from './pages/ChangePasswordPage';
 
 function App() {
   const [token, setToken] = useState(localStorage.getItem('rdm_token') || '');
-  const [loginForm, setLoginForm] = useState({ email: 'admin@example.com', password: 'Admin@123' });
+  const [loginForm, setLoginForm] = useState({ email: 'admin@example.com', password: '' });
+  const [isChangingPassword, setIsChangingPassword] = useState(false);
+  const [passwordChangeForm, setPasswordChangeForm] = useState({
+    email: 'admin@example.com',
+    currentPassword: '',
+    newPassword: '',
+    confirmPassword: ''
+  });
   const [loginError, setLoginError] = useState('');
   const [isCheckingAuth, setIsCheckingAuth] = useState(Boolean(localStorage.getItem('rdm_token')));
 
@@ -33,6 +40,20 @@ function App() {
       localStorage.setItem('rdm_token', receivedToken);
     } catch (error) {
       setLoginError(getApiError(error, 'Login failed'));
+    }
+  }
+
+  async function changePasswordFromLogin(event) {
+    event.preventDefault();
+    setLoginError('');
+
+    try {
+      const response = await api.post('/auth/change-password-from-login', passwordChangeForm);
+      setLoginError(response.data.message);
+      setPasswordChangeForm((prev) => ({ ...prev, currentPassword: '', newPassword: '', confirmPassword: '' }));
+      setIsChangingPassword(false);
+    } catch (error) {
+      setLoginError(getApiError(error, 'Failed to change password'));
     }
   }
 
@@ -98,28 +119,69 @@ function App() {
       <main className="min-h-screen bg-slate-100 p-6">
         <div className="mx-auto max-w-md rounded-xl bg-white p-6 shadow">
           <h1 className="text-2xl font-bold text-slate-900">RDM Admin Login</h1>
-          <p className="mt-2 text-sm text-slate-600">Sign in to use the system.</p>
+          <p className="mt-2 text-sm text-slate-600">
+            {isChangingPassword ? 'Change your password securely.' : 'Sign in to use the system.'}
+          </p>
 
-          <form className="mt-6 space-y-4" onSubmit={login}>
+          <form className="mt-6 space-y-4" onSubmit={isChangingPassword ? changePasswordFromLogin : login}>
             <label className="block text-sm font-medium text-slate-700">
               Email
               <input
                 className="mt-1 w-full rounded border border-slate-300 px-3 py-2"
                 type="email"
-                value={loginForm.email}
-                onChange={(event) => setLoginForm((prev) => ({ ...prev, email: event.target.value }))}
+                value={isChangingPassword ? passwordChangeForm.email : loginForm.email}
+                onChange={(event) => {
+                  if (isChangingPassword) {
+                    setPasswordChangeForm((prev) => ({ ...prev, email: event.target.value }));
+                  } else {
+                    setLoginForm((prev) => ({ ...prev, email: event.target.value }));
+                  }
+                }}
               />
             </label>
 
             <label className="block text-sm font-medium text-slate-700">
-              Password
+              {isChangingPassword ? 'Current Password' : 'Password'}
               <input
                 className="mt-1 w-full rounded border border-slate-300 px-3 py-2"
                 type="password"
-                value={loginForm.password}
-                onChange={(event) => setLoginForm((prev) => ({ ...prev, password: event.target.value }))}
+                value={isChangingPassword ? passwordChangeForm.currentPassword : loginForm.password}
+                onChange={(event) => {
+                  if (isChangingPassword) {
+                    setPasswordChangeForm((prev) => ({ ...prev, currentPassword: event.target.value }));
+                  } else {
+                    setLoginForm((prev) => ({ ...prev, password: event.target.value }));
+                  }
+                }}
               />
             </label>
+
+            {isChangingPassword ? (
+              <>
+                <label className="block text-sm font-medium text-slate-700">
+                  New Password
+                  <input
+                    className="mt-1 w-full rounded border border-slate-300 px-3 py-2"
+                    type="password"
+                    minLength={6}
+                    required
+                    value={passwordChangeForm.newPassword}
+                    onChange={(event) => setPasswordChangeForm((prev) => ({ ...prev, newPassword: event.target.value }))}
+                  />
+                </label>
+                <label className="block text-sm font-medium text-slate-700">
+                  Confirm New Password
+                  <input
+                    className="mt-1 w-full rounded border border-slate-300 px-3 py-2"
+                    type="password"
+                    minLength={6}
+                    required
+                    value={passwordChangeForm.confirmPassword}
+                    onChange={(event) => setPasswordChangeForm((prev) => ({ ...prev, confirmPassword: event.target.value }))}
+                  />
+                </label>
+              </>
+            ) : null}
 
             {loginError ? <p className="text-sm text-red-600">{loginError}</p> : null}
 
@@ -127,9 +189,19 @@ function App() {
               className="w-full rounded bg-slate-900 px-4 py-2 font-medium text-white"
               type="submit"
             >
-              Login
+              {isChangingPassword ? 'Change Password' : 'Login'}
             </button>
           </form>
+          <button
+            className="mt-3 w-full rounded border border-slate-300 px-4 py-2 font-medium text-slate-700"
+            type="button"
+            onClick={() => {
+              setLoginError('');
+              setIsChangingPassword((prev) => !prev);
+            }}
+          >
+            {isChangingPassword ? 'Back to Login' : 'Change Password'}
+          </button>
         </div>
       </main>
     );

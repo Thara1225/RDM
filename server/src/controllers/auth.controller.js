@@ -51,8 +51,30 @@ async function changePassword(req, res) {
   return res.status(200).json({ message: 'Password changed successfully' });
 }
 
+async function changePasswordFromLogin(req, res) {
+  const { email, currentPassword, newPassword } = req.body;
+  const admin = await prisma.admin.findUnique({ where: { email } });
+
+  if (!admin) {
+    throw new ApiError(400, 'Email or current password is incorrect');
+  }
+
+  const passwordMatched = await bcrypt.compare(currentPassword, admin.passwordHash);
+  if (!passwordMatched) {
+    throw new ApiError(400, 'Email or current password is incorrect');
+  }
+
+  const passwordHash = await bcrypt.hash(newPassword, 12);
+  await prisma.admin.update({
+    where: { id: admin.id },
+    data: { passwordHash }
+  });
+
+  return res.status(200).json({ message: 'Password changed successfully. You can now log in.' });
+}
+
 function me(req, res) {
   return res.status(200).json({ admin: req.admin });
 }
 
-module.exports = { login, me, changePassword };
+module.exports = { login, me, changePassword, changePasswordFromLogin };
