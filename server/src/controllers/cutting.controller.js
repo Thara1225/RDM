@@ -58,7 +58,7 @@ async function createCutting(req, res) {
         notes
       },
       include: {
-        product: { select: { id: true, name: true } },
+        product: { select: { id: true, name: true, dressCode: true } },
         material: { select: { id: true, name: true, unitType: true } }
       }
     });
@@ -95,7 +95,7 @@ async function listCuttings(req, res) {
   const cuttings = await prisma.cutting.findMany({
     where,
     include: {
-      product: { select: { id: true, name: true } },
+      product: { select: { id: true, name: true, dressCode: true } },
       material: { select: { id: true, name: true, unitType: true } }
     },
     orderBy: { cutDate: 'desc' }
@@ -110,7 +110,7 @@ async function getCuttingById(req, res) {
   const cutting = await prisma.cutting.findUnique({
     where: { id },
     include: {
-      product: { select: { id: true, name: true } },
+      product: { select: { id: true, name: true, dressCode: true } },
       material: { select: { id: true, name: true, unitType: true } }
     }
   });
@@ -196,7 +196,7 @@ async function updateCutting(req, res) {
         notes
       },
       include: {
-        product: { select: { id: true, name: true } },
+        product: { select: { id: true, name: true, dressCode: true } },
         material: { select: { id: true, name: true, unitType: true } }
       }
     });

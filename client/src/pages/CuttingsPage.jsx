@@ -165,7 +165,7 @@ export default function CuttingsPage({ token }) {
                 <option value="">Select product</option>
                 {products.map((item) => (
                   <option key={item.id} value={item.id}>
-                    {item.name}
+                    {item.name}{item.dressCode ? ` (${item.dressCode})` : ''}
                   </option>
                 ))}
               </select>
@@ -269,7 +269,7 @@ export default function CuttingsPage({ token }) {
                 <option value="">All products</option>
                 {products.map((item) => (
                   <option key={item.id} value={item.id}>
-                    {item.name}
+                    {item.name}{item.dressCode ? ` (${item.dressCode})` : ''}
                   </option>
                 ))}
               </select>
@@ -342,6 +342,7 @@ export default function CuttingsPage({ token }) {
               <tr className="bg-slate-50 text-left text-slate-600">
                 <th className="px-3 py-2 font-medium">Date</th>
                 <th className="px-3 py-2 font-medium">Product</th>
+                <th className="px-3 py-2 font-medium">Dress Code</th>
                 <th className="px-3 py-2 font-medium">Material</th>
                 <th className="px-3 py-2 font-medium">Qty Cut</th>
                 <th className="px-3 py-2 font-medium">Cloth Used</th>
@@ -353,6 +354,7 @@ export default function CuttingsPage({ token }) {
                 <tr key={item.id}>
                   <td className="px-3 py-2">{new Date(item.cutDate).toISOString().slice(0, 10)}</td>
                   <td className="px-3 py-2">{item.product?.name}</td>
+                  <td className="px-3 py-2">{item.product?.dressCode || '-'}</td>
                   <td className="px-3 py-2">
                     {item.material?.name} ({item.material?.unitType})
                   </td>
