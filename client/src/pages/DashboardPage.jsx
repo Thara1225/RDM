@@ -91,10 +91,10 @@ export default function DashboardPage({ token }) {
   ];
 
   return (
-    <div className="space-y-6">
-      <header className="rounded-xl bg-white p-6 shadow">
-        <h1 className="text-2xl font-bold text-slate-900">Dashboard</h1>
-        <p className="mt-1 text-sm text-slate-600">Summary of your inventory and operations.</p>
+    <div className="dashboard-page">
+      <header className="dashboard-hero">
+        <h1>Hello, Designer! <span aria-hidden="true">👋</span></h1>
+        <p>Here's a summary of your inventory and operations.</p>
       </header>
 
       {error ? (
@@ -107,16 +107,16 @@ export default function DashboardPage({ token }) {
       ) : null}
 
       <section className="rounded-xl bg-white p-6 shadow">
-        <div className="flex items-center justify-between gap-3">
-          <h2 className="text-lg font-semibold text-slate-900">Notifications</h2>
-          <span className={`text-sm font-medium ${systemStatus === 'online' ? 'text-green-700' : systemStatus === 'offline' ? 'text-red-700' : 'text-slate-500'}`}>
-            System: {systemStatus === 'checking' ? 'Checking...' : systemStatus === 'online' ? 'Online' : 'Unavailable'}
+        <div className="dashboard-section-heading">
+          <h2>🔔 Notifications</h2>
+          <span className={`system-status ${systemStatus}`}>
+            ● System: {systemStatus === 'checking' ? 'Checking...' : systemStatus === 'online' ? 'Online' : 'Unavailable'}
           </span>
         </div>
 
         <div className="mt-3 space-y-2 text-sm">
           {systemStatus === 'offline' ? (
-            <div className="rounded border border-red-200 bg-red-50 px-3 py-2 text-red-700">
+            <div className="dashboard-notice notice-error">
               The system API is unavailable. Save your work and try again when the system is online.
             </div>
           ) : null}
@@ -125,7 +125,7 @@ export default function DashboardPage({ token }) {
             <div className="flex flex-wrap items-center justify-between gap-3 rounded border border-amber-200 bg-amber-50 px-3 py-2 text-amber-800">
               <span>Monthly report has not been downloaded for {new Date().toLocaleString('default', { month: 'long', year: 'numeric' })}.</span>
               <button
-                className="rounded border border-amber-400 px-3 py-1 text-xs font-medium text-amber-900"
+                className="dashboard-inline-button"
                 type="button"
                 onClick={() => navigate('/reports')}
               >
@@ -133,21 +133,21 @@ export default function DashboardPage({ token }) {
               </button>
             </div>
           ) : (
-            <p className="rounded border border-green-200 bg-green-50 px-3 py-2 text-green-700">
+            <p className="dashboard-notice notice-success">
               Monthly report downloaded for {new Date().toLocaleString('default', { month: 'long', year: 'numeric' })}.
             </p>
           )}
         </div>
       </section>
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      <div className="dashboard-stat-grid">
         {cards.map((card) => (
-          <div key={card.label} className={`dashboard-stat-card rounded-lg border-2 p-6 ${card.color}`}>
-            <p className="dashboard-stat-label text-sm font-medium text-slate-700">{card.label}</p>
+          <div key={card.label} className={`dashboard-stat-card ${card.color}`}>
+            <p className="dashboard-stat-label">{card.label}</p>
             {loading ? (
-              <p className="dashboard-stat-value mt-2 text-2xl font-bold text-slate-600">...</p>
+              <p className="dashboard-stat-value">...</p>
             ) : (
-              <p className="dashboard-stat-value mt-2 text-2xl font-bold text-slate-900">{card.value}</p>
+              <p className="dashboard-stat-value">{card.value}</p>
             )}
           </div>
         ))}

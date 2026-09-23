@@ -31,45 +31,47 @@ export default function Layout({ children, onLogout }) {
   }, [isDarkMode]);
 
   return (
-    <div className="flex h-screen bg-slate-100">
+    <div className={`app-shell ${sidebarOpen ? 'sidebar-expanded' : 'sidebar-collapsed'}`}>
       <aside
-        className={`${sidebarOpen ? 'w-64' : 'w-20'} bg-slate-900 text-white transition-all duration-300 flex flex-col`}
+        className="app-sidebar"
       >
-        <div className="p-4 border-b border-slate-800 flex items-center justify-between">
-          {sidebarOpen && <h1 className="font-bold text-lg">RDM</h1>}
+        <div className="app-brand-row">
+          <div className="app-brand-mark">↗</div>
+          {sidebarOpen && <h1 className="app-brand-name">RDM</h1>}
           <button
             onClick={() => setSidebarOpen(!sidebarOpen)}
-            className="p-1 hover:bg-slate-800 rounded"
+            className="app-collapse-button"
+            aria-label={sidebarOpen ? 'Collapse sidebar' : 'Expand sidebar'}
           >
-            {sidebarOpen ? '◀' : '▶'}
+            {sidebarOpen ? '‹' : '›'}
           </button>
         </div>
 
-        <nav className="flex-1 overflow-y-auto p-3 space-y-1">
+        <nav className="app-nav">
           {modules.map((module) => (
             <button
               key={module.path}
               onClick={() => navigate(module.path)}
-              className={`w-full text-left px-3 py-2 rounded transition-colors ${
+              className={`app-nav-item ${
                 location.pathname === module.path
-                  ? 'bg-blue-600 text-white'
-                  : 'text-slate-200 hover:bg-slate-800'
+                  ? 'active'
+                  : ''
               }`}
               title={module.name}
             >
-              <span className="text-xl">{module.icon}</span>
-              {sidebarOpen && <span className="ml-3 text-sm">{module.name}</span>}
+              <span className="app-nav-icon">{module.icon}</span>
+              {sidebarOpen && <span className="app-nav-label">{module.name}</span>}
             </button>
           ))}
         </nav>
 
-        <div className="p-3 border-t border-slate-800">
+        <div className="app-sidebar-footer">
           <button
             onClick={() => navigate('/change-password')}
-            className={`mb-3 w-full px-3 py-2 rounded text-sm transition-colors ${
+            className={`app-footer-button app-change-password ${
               location.pathname === '/change-password'
-                ? 'bg-blue-600 text-white'
-                : 'text-slate-200 hover:bg-slate-800'
+                ? 'active'
+                : ''
             }`}
             title="Change Password"
           >
@@ -78,10 +80,9 @@ export default function Layout({ children, onLogout }) {
 
           {sidebarOpen ? (
             <div className="mb-3 space-y-2">
-              <p className="text-xs text-slate-300">Theme</p>
-              <div className="grid grid-cols-1 gap-1">
+              <div className="app-theme-control">
                 <button
-                  className={`rounded px-2 py-1 text-xs ${isDarkMode ? 'bg-blue-600 text-white' : 'bg-slate-800 text-slate-200'}`}
+                  className="app-footer-button"
                   onClick={() => setIsDarkMode((prev) => !prev)}
                   type="button"
                 >
@@ -93,15 +94,15 @@ export default function Layout({ children, onLogout }) {
 
           <button
             onClick={onLogout}
-            className="w-full px-3 py-2 bg-red-600 hover:bg-red-700 rounded text-sm transition-colors"
+            className="app-logout-button"
           >
             {sidebarOpen ? 'Logout' : '🚪'}
           </button>
         </div>
       </aside>
 
-      <main className="flex-1 overflow-auto">
-        <div className="p-6">{children}</div>
+      <main className="app-main">
+        <div className="app-content">{children}</div>
       </main>
     </div>
   );
