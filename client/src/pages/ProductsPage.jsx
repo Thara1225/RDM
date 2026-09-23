@@ -216,8 +216,8 @@ export default function ProductsPage({ token }) {
         </div>
       </section>
 
-      <section className="grid gap-6 lg:grid-cols-2">
-        <form className="rounded-xl bg-white p-6 shadow" onSubmit={saveProduct}>
+      <section className="products-workspace">
+        <form className="products-form-panel rounded-xl bg-white p-6 shadow" onSubmit={saveProduct}>
           <div className="flex items-center justify-between">
             <h2 className="text-lg font-semibold text-slate-900">{editingId ? 'Edit Product' : 'Add Product'}</h2>
             {editingId ? (
@@ -315,14 +315,22 @@ export default function ProductsPage({ token }) {
           </button>
         </form>
 
-        <section className="rounded-xl bg-white p-6 shadow">
-          <h2 className="text-lg font-semibold text-slate-900">Product List</h2>
+        <section className="products-list-panel rounded-xl bg-white p-6 shadow">
+          <div className="products-list-heading">
+            <div>
+              <h2 className="text-lg font-semibold text-slate-900">Product List</h2>
+              <p className="products-count">{products.length} {products.length === 1 ? 'product' : 'products'} found</p>
+            </div>
+            <button className="products-add-shortcut" type="button" onClick={startAdd}>
+              + New Product
+            </button>
+          </div>
 
           {isLoading ? <p className="mt-4 text-sm text-slate-600">Loading...</p> : null}
 
-          <div className="mt-4 space-y-3">
+          <div className="products-list-items">
             {products.map((product) => (
-              <div key={product.id} className="rounded border border-slate-200 p-3">
+              <div key={product.id} className="product-list-item">
                 <div className="flex gap-3">
                   {product.photoUrl ? (
                     <img
