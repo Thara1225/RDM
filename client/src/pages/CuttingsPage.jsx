@@ -15,7 +15,6 @@ export default function CuttingsPage({ token }) {
     productId: '',
     materialId: '',
     quantityCut: '',
-    clothUsed: '',
     cutDate: today,
     notes: ''
   });
@@ -77,7 +76,7 @@ export default function CuttingsPage({ token }) {
           productId: Number(form.productId),
           materialId: Number(form.materialId),
           quantityCut: Number(form.quantityCut),
-          clothUsed: Number(form.clothUsed),
+          clothUsed: 0,
           cutDate: form.cutDate,
           notes: form.notes || null
         }
@@ -86,7 +85,6 @@ export default function CuttingsPage({ token }) {
       setForm((current) => ({
         ...current,
         quantityCut: '',
-        clothUsed: '',
         notes: ''
       }));
 
@@ -163,18 +161,6 @@ export default function CuttingsPage({ token }) {
                 min="1"
                 value={form.quantityCut}
                 onChange={(event) => setForm((prev) => ({ ...prev, quantityCut: event.target.value }))}
-              />
-            </label>
-
-            <label className="text-sm font-medium text-slate-700">
-              Cloth Used
-              <input
-                className="mt-1 w-full rounded border border-slate-300 px-3 py-2"
-                type="number"
-                min="0.001"
-                step="0.001"
-                value={form.clothUsed}
-                onChange={(event) => setForm((prev) => ({ ...prev, clothUsed: event.target.value }))}
               />
             </label>
 
@@ -293,7 +279,6 @@ export default function CuttingsPage({ token }) {
                 <th className="px-3 py-2 font-medium">Dress Code</th>
                 <th className="px-3 py-2 font-medium">Material</th>
                 <th className="px-3 py-2 font-medium">Qty Cut</th>
-                <th className="px-3 py-2 font-medium">Cloth Used</th>
                 <th className="px-3 py-2 font-medium">Notes</th>
               </tr>
             </thead>
@@ -307,7 +292,6 @@ export default function CuttingsPage({ token }) {
                     {item.material?.name} ({item.material?.unitType})
                   </td>
                   <td className="px-3 py-2">{item.quantityCut}</td>
-                  <td className="px-3 py-2">{item.clothUsed}</td>
                   <td className="px-3 py-2">{item.notes || '-'}</td>
                 </tr>
               ))}

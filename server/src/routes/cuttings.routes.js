@@ -19,7 +19,7 @@ const createSchema = z.object({
   productId: z.coerce.number().int().positive(),
   materialId: z.coerce.number().int().positive(),
   quantityCut: z.coerce.number().int().positive(),
-  clothUsed: z.coerce.number().positive(),
+  clothUsed: z.coerce.number().min(0).default(0),
   wasteQuantity: z.coerce.number().min(0).optional(),
   cutDate: z.string().date(),
   notes: z.string().trim().optional().nullable()

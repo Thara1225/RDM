@@ -32,7 +32,7 @@ async function createCutting(req, res) {
     productId,
     materialId,
     quantityCut,
-    clothUsed,
+    clothUsed = 0,
     wasteQuantity = 0,
     cutDate,
     notes
