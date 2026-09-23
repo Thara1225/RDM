@@ -384,8 +384,8 @@ export default function SuppliersPage({ token }) {
         </div>
       </section>
 
-      <section className="grid gap-6 lg:grid-cols-2">
-        <form className="rounded-xl bg-white p-6 shadow" onSubmit={saveSupplier}>
+      <section className="suppliers-workspace">
+        <form className="suppliers-form-panel rounded-xl bg-white p-6 shadow" onSubmit={saveSupplier}>
           <div className="flex items-center justify-between">
             <h2 className="text-lg font-semibold text-slate-900">{editingId ? 'Edit Supplier' : 'Add Supplier'}</h2>
             {editingId ? (
@@ -446,7 +446,7 @@ export default function SuppliersPage({ token }) {
           </button>
         </form>
 
-        <section className="rounded-xl bg-white p-6 shadow">
+        <section className="suppliers-list-panel rounded-xl bg-white p-6 shadow">
           <h2 className="text-lg font-semibold text-slate-900">Supplier List</h2>
 
           {isLoading ? <p className="mt-4 text-sm text-slate-600">Loading...</p> : null}

@@ -150,8 +150,8 @@ export default function StockPage({ token }) {
         </div>
       </section>
 
-      <section className="grid gap-6 lg:grid-cols-2">
-        <form className="rounded-xl bg-white p-6 shadow" onSubmit={addDressToStock}>
+      <section className="stock-workspace">
+        <form className="stock-form-panel rounded-xl bg-white p-6 shadow" onSubmit={addDressToStock}>
           <h2 className="text-lg font-semibold text-slate-900">Add Dress To Stock</h2>
 
           <div className="mt-4 grid gap-4">
@@ -199,7 +199,7 @@ export default function StockPage({ token }) {
           </button>
         </form>
 
-        <section className="rounded-xl bg-white p-6 shadow">
+        <section className="stock-table-panel rounded-xl bg-white p-6 shadow">
           <h2 className="text-lg font-semibold text-slate-900">Current Stock</h2>
 
           {isLoading ? <p className="mt-4 text-sm text-slate-600">Loading...</p> : null}

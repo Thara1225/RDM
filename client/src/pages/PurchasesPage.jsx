@@ -176,8 +176,8 @@ export default function PurchasesPage({ token }) {
         <div className="rounded border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{apiError}</div>
       ) : null}
 
-      <section className="grid gap-6 lg:grid-cols-2">
-        <form className="rounded-xl bg-white p-6 shadow" onSubmit={savePurchase}>
+      <section className="purchases-workspace">
+        <form className="purchases-form-panel rounded-xl bg-white p-6 shadow" onSubmit={savePurchase}>
           <div className="flex items-center justify-between">
             <h2 className="text-lg font-semibold text-slate-900">{editingId ? 'Edit Purchase' : 'Add Purchase'}</h2>
             {editingId ? (
@@ -278,7 +278,7 @@ export default function PurchasesPage({ token }) {
           </button>
         </form>
 
-        <section className="rounded-xl bg-white p-6 shadow">
+        <section className="purchases-table-panel rounded-xl bg-white p-6 shadow">
           <div className="flex items-center justify-between gap-3">
             <h2 className="text-lg font-semibold text-slate-900">Non-Garment Asset Purchases</h2>
             <p className="text-sm text-slate-600">Total Amount: {totalAmount.toFixed(2)}</p>

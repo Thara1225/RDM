@@ -321,9 +321,6 @@ export default function ProductsPage({ token }) {
               <h2 className="text-lg font-semibold text-slate-900">Product List</h2>
               <p className="products-count">{products.length} {products.length === 1 ? 'product' : 'products'} found</p>
             </div>
-            <button className="products-add-shortcut" type="button" onClick={startAdd}>
-              + New Product
-            </button>
           </div>
 
           {isLoading ? <p className="mt-4 text-sm text-slate-600">Loading...</p> : null}
@@ -382,14 +379,14 @@ export default function ProductsPage({ token }) {
                   </div>
                   <div className="flex flex-wrap gap-1">
                     <button
-                      className="rounded border border-slate-300 px-2 py-1 text-xs font-medium text-slate-700"
+                      className="product-action-edit rounded border border-slate-300 px-2 py-1 text-xs font-medium text-slate-700"
                       type="button"
                       onClick={() => startEdit(product)}
                     >
                       Edit
                     </button>
                     <button
-                      className="rounded border border-red-300 px-2 py-1 text-xs font-medium text-red-700"
+                      className="product-action-delete rounded border border-red-300 px-2 py-1 text-xs font-medium text-red-700"
                       type="button"
                       onClick={() => deleteProduct(product)}
                     >
