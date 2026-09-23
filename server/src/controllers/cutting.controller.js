@@ -42,8 +42,8 @@ async function createCutting(req, res) {
     await ensureProductExists(tx, productId);
     await ensureMaterialExists(tx, materialId);
 
-    const stock = await getStockOrFail(tx, materialId);
-    if (toNumber(stock.availableQuantity) < clothUsed) {
+    const stock = clothUsed > 0 ? await getStockOrFail(tx, materialId) : null;
+    if (stock && toNumber(stock.availableQuantity) < clothUsed) {
       throw new ApiError(400, 'Insufficient stock for this cutting');
     }
 
@@ -63,12 +63,14 @@ async function createCutting(req, res) {
       }
     });
 
-    const updatedStock = await tx.stock.update({
-      where: { materialId },
-      data: {
-        availableQuantity: { decrement: clothUsed }
-      }
-    });
+    const updatedStock = stock
+      ? await tx.stock.update({
+          where: { materialId },
+          data: {
+            availableQuantity: { decrement: clothUsed }
+          }
+        })
+      : null;
 
     return { cutting, stock: updatedStock };
   });
