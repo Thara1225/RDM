@@ -20,9 +20,6 @@ export default function CuttingsPage({ token }) {
     notes: ''
   });
 
-  const [newProductName, setNewProductName] = useState('');
-  const [isCreatingProduct, setIsCreatingProduct] = useState(false);
-
   const [filters, setFilters] = useState({
     productId: '',
     materialId: '',
@@ -99,35 +96,6 @@ export default function CuttingsPage({ token }) {
     }
   }
 
-  async function createProductFromCuttings() {
-    setApiError('');
-
-    if (!newProductName.trim()) {
-      setApiError('Product name is required');
-      return;
-    }
-
-    setIsCreatingProduct(true);
-    try {
-      const response = await api.post('/products', {
-        name: newProductName.trim()
-      });
-
-      const createdProduct = response.data;
-      await loadMasterData();
-
-      setForm((prev) => ({
-        ...prev,
-        productId: String(createdProduct.id)
-      }));
-      setNewProductName('');
-    } catch (error) {
-      setApiError(getApiError(error, 'Failed to create product'));
-    } finally {
-      setIsCreatingProduct(false);
-    }
-  }
-
   async function applyFilters(event) {
     event.preventDefault();
     setApiError('');
@@ -170,26 +138,6 @@ export default function CuttingsPage({ token }) {
                 ))}
               </select>
             </label>
-
-            <div className="rounded border border-slate-200 p-3">
-              <p className="text-xs font-semibold text-slate-700">Add New Product Here</p>
-              <div className="mt-2 flex flex-wrap items-center gap-2">
-                <input
-                  className="w-full flex-1 rounded border border-slate-300 px-3 py-2 text-sm"
-                  placeholder="Type new product name"
-                  value={newProductName}
-                  onChange={(event) => setNewProductName(event.target.value)}
-                />
-                <button
-                  className="rounded border border-slate-300 px-3 py-2 text-xs font-medium text-slate-700 disabled:opacity-60"
-                  type="button"
-                  onClick={createProductFromCuttings}
-                  disabled={isCreatingProduct}
-                >
-                  {isCreatingProduct ? 'Adding...' : 'Add Product'}
-                </button>
-              </div>
-            </div>
 
             <label className="text-sm font-medium text-slate-700">
               Material
