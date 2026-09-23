@@ -64,6 +64,18 @@ export default function Layout({ children, onLogout }) {
         </nav>
 
         <div className="p-3 border-t border-slate-800">
+          <button
+            onClick={() => navigate('/change-password')}
+            className={`mb-3 w-full px-3 py-2 rounded text-sm transition-colors ${
+              location.pathname === '/change-password'
+                ? 'bg-blue-600 text-white'
+                : 'text-slate-200 hover:bg-slate-800'
+            }`}
+            title="Change Password"
+          >
+            {sidebarOpen ? 'Change Password' : '🔑'}
+          </button>
+
           {sidebarOpen ? (
             <div className="mb-3 space-y-2">
               <p className="text-xs text-slate-300">Theme</p>

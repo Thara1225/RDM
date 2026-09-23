@@ -29,8 +29,30 @@ async function login(req, res) {
   });
 }
 
+async function changePassword(req, res) {
+  const { currentPassword, newPassword } = req.body;
+  const admin = await prisma.admin.findUnique({ where: { id: req.admin.id } });
+
+  if (!admin) {
+    throw new ApiError(401, 'Admin account not found');
+  }
+
+  const passwordMatched = await bcrypt.compare(currentPassword, admin.passwordHash);
+  if (!passwordMatched) {
+    throw new ApiError(400, 'Current password is incorrect');
+  }
+
+  const passwordHash = await bcrypt.hash(newPassword, 12);
+  await prisma.admin.update({
+    where: { id: admin.id },
+    data: { passwordHash }
+  });
+
+  return res.status(200).json({ message: 'Password changed successfully' });
+}
+
 function me(req, res) {
   return res.status(200).json({ admin: req.admin });
 }
 
-module.exports = { login, me };
+module.exports = { login, me, changePassword };
