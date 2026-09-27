@@ -104,6 +104,21 @@ export default function CuttingsPage({ token }) {
     }
   }
 
+  async function deleteCutting(item) {
+    const productName = item.product?.name || 'this cutting';
+    if (!window.confirm(`Delete the cutting for "${productName}"?`)) {
+      return;
+    }
+
+    setApiError('');
+    try {
+      await api.delete(`/cuttings/${item.id}`);
+      await loadCuttings();
+    } catch (error) {
+      setApiError(getApiError(error, 'Failed to delete cutting'));
+    }
+  }
+
   return (
     <div className="space-y-6">
       <header className="rounded-xl bg-white p-6 shadow">
@@ -280,6 +295,7 @@ export default function CuttingsPage({ token }) {
                 <th className="px-3 py-2 font-medium">Material</th>
                 <th className="px-3 py-2 font-medium">Qty Cut</th>
                 <th className="px-3 py-2 font-medium">Notes</th>
+                <th className="px-3 py-2 font-medium">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
@@ -293,6 +309,15 @@ export default function CuttingsPage({ token }) {
                   </td>
                   <td className="px-3 py-2">{item.quantityCut}</td>
                   <td className="px-3 py-2">{item.notes || '-'}</td>
+                  <td className="px-3 py-2">
+                    <button
+                      className="cutting-delete-button rounded border border-red-300 px-2 py-1 text-xs font-medium text-red-700"
+                      type="button"
+                      onClick={() => deleteCutting(item)}
+                    >
+                      Delete
+                    </button>
+                  </td>
                 </tr>
               ))}
             </tbody>

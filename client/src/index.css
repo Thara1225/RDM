@@ -275,6 +275,7 @@ html.theme-night textarea {
 .product-list-item .text-xs { color: #526b91 !important; }
 .product-action-edit:hover { border-color: #3f6fd8; background: #3f6fd8; color: #fff; }
 .product-action-delete:hover { border-color: #d45d58; background: #d45d58; color: #fff; }
+.cutting-delete-button:hover { border-color: #d45d58; background: #d45d58; color: #fff; }
 .products-form-panel .grid.gap-4 { gap: 12px; }
 .products-form-panel textarea { min-height: 74px; }
 .purchases-workspace { display: grid; gap: 18px; }
