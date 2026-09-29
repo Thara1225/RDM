@@ -72,6 +72,13 @@ async function createCutting(req, res) {
         })
       : null;
 
+    await tx.product.update({
+      where: { id: productId },
+      data: {
+        stockQty: { increment: quantityCut }
+      }
+    });
+
     return { cutting, stock: updatedStock };
   });
 
@@ -238,6 +245,13 @@ async function deleteCutting(req, res) {
     });
 
     await tx.cutting.delete({ where: { id } });
+
+    await tx.product.update({
+      where: { id: existing.productId },
+      data: {
+        stockQty: { decrement: existing.quantityCut }
+      }
+    });
 
     return {
       message: 'Cutting deleted successfully',
