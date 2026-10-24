@@ -16,6 +16,7 @@ import PurchasesPage from './pages/PurchasesPage';
 import ReportsPage from './pages/ReportsPage';
 import ChangePasswordPage from './pages/ChangePasswordPage';
 import StockPage from './pages/StockPage';
+import EmployeePaymentsPage from './pages/EmployeePaymentsPage';
 
 function App() {
   const [token, setToken] = useState(localStorage.getItem('rdm_token') || '');
@@ -240,6 +241,7 @@ function App() {
         <Route path="/bill-amounts" element={<BillAmountsPage token={token} />} />
         <Route path="/reports" element={<ReportsPage token={token} />} />
         <Route path="/stock" element={<StockPage token={token} />} />
+        <Route path="/employee-payments" element={<EmployeePaymentsPage token={token} />} />
         <Route path="/change-password" element={<ChangePasswordPage />} />
         <Route path="*" element={<Navigate to="/dashboard" />} />
       </Routes>

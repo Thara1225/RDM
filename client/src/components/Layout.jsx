@@ -3,6 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 
 const modules = [
   { name: 'Dashboard', path: '/dashboard', icon: '📊' },
+  { name: 'Employee Payments', path: '/employee-payments', icon: '👥' },
   { name: 'Suppliers', path: '/suppliers', icon: '🏭' },
   { name: 'Shops', path: '/shops', icon: '🛍️' },
   { name: 'Materials', path: '/materials', icon: '📦' },
