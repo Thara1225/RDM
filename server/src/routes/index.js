@@ -12,6 +12,8 @@ const cuttingsRoutes = require('./cuttings.routes');
 const shopOrdersRoutes = require('./shopOrders.routes');
 const shopPaymentsRoutes = require('./shopPayments.routes');
 const reportsRoutes = require('./reports.routes');
+const employeesRoutes = require('./employees.routes');
+const salariesRoutes = require('./salaries.routes');
 
 const router = express.Router();
 
@@ -36,5 +38,7 @@ router.use('/shop-payments', shopPaymentsRoutes);
 router.use('/reports', reportsRoutes);
 router.use('/stock', stockRoutes);
 router.use('/cuttings', cuttingsRoutes);
+router.use('/employees', employeesRoutes);
+router.use('/salaries', salariesRoutes);
 
 module.exports = router;

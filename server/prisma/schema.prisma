@@ -19,6 +19,17 @@ enum ShopOrderStatus {
   cancelled
 }
 
+enum EmployeePayType {
+  daily
+  piece
+}
+
+enum SalaryStatus {
+  draft
+  approved
+  paid
+}
+
 model Admin {
   id           Int      @id @default(autoincrement())
   name         String   @db.VarChar(100)
@@ -27,6 +38,54 @@ model Admin {
   createdAt    DateTime @default(now()) @map("created_at")
 
   @@map("admins")
+}
+
+model Employee {
+  id           Int              @id @default(autoincrement())
+  empCode      String           @unique @map("emp_code") @db.VarChar(50)
+  name         String           @db.VarChar(150)
+  department   String?          @db.VarChar(100)
+  payType      EmployeePayType  @default(daily) @map("pay_type")
+  dailyRate    Decimal?         @map("daily_rate") @db.Decimal(12, 2)
+  pieceRate    Decimal?         @map("piece_rate") @db.Decimal(12, 2)
+  hourlyRate   Decimal?         @map("hourly_rate") @db.Decimal(12, 2)
+  active       Boolean          @default(true)
+  createdAt    DateTime         @default(now()) @map("created_at")
+  salaryRecords SalaryRecord[]
+
+  @@index([name])
+  @@index([department])
+  @@map("employees")
+}
+
+model SalaryRecord {
+  id              Int          @id @default(autoincrement())
+  employeeId      Int          @map("employee_id")
+  month           Int
+  year            Int
+  daysWorked      Int          @default(0) @map("days_worked")
+  piecesDone      Decimal      @default(0) @map("pieces_done") @db.Decimal(12, 2)
+  otHours         Decimal      @default(0) @map("ot_hours") @db.Decimal(8, 2)
+  basicPay        Decimal      @default(0) @map("basic_pay") @db.Decimal(14, 2)
+  otPay           Decimal      @default(0) @map("ot_pay") @db.Decimal(14, 2)
+  allowances      Decimal      @default(0) @db.Decimal(14, 2)
+  bonus           Decimal      @default(0) @db.Decimal(14, 2)
+  epfDeduction    Decimal      @default(0) @map("epf_deduction") @db.Decimal(14, 2)
+  advanceDeduction Decimal     @default(0) @map("advance_deduction") @db.Decimal(14, 2)
+  otherDeductions Decimal      @default(0) @map("other_deductions") @db.Decimal(14, 2)
+  grossPay        Decimal      @default(0) @map("gross_pay") @db.Decimal(14, 2)
+  netPay          Decimal      @default(0) @map("net_pay") @db.Decimal(14, 2)
+  employerEpf     Decimal      @default(0) @map("employer_epf") @db.Decimal(14, 2)
+  employerEtf     Decimal      @default(0) @map("employer_etf") @db.Decimal(14, 2)
+  status          SalaryStatus @default(draft)
+  createdAt       DateTime     @default(now()) @map("created_at")
+  updatedAt       DateTime     @updatedAt @map("updated_at")
+
+  employee Employee @relation(fields: [employeeId], references: [id], onDelete: Restrict)
+
+  @@unique([employeeId, month, year])
+  @@index([year, month])
+  @@map("salary_records")
 }
 
 model Supplier {
