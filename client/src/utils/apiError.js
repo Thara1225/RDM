@@ -36,6 +36,10 @@ export function getApiError(error, fallbackMessage = 'Something went wrong') {
     return fallbackMessage;
   }
 
+  if (error.code === 'ECONNABORTED' || error.code === 'ETIMEDOUT') {
+    return 'The server is waking up. Please wait a moment and try again.';
+  }
+
   const responseError = error.response?.data?.error;
   return (
     getValidationMessage(responseError?.details) ||
