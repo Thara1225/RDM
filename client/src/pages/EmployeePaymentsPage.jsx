@@ -77,17 +77,28 @@ export default function EmployeePaymentsPage({ token }) {
   }
 
   async function editSalary(record) {
-    const values = {
-      daysWorked: window.prompt('Days worked', record.daysWorked) ?? record.daysWorked,
-      piecesDone: window.prompt('Pieces completed', record.piecesDone) ?? record.piecesDone,
-      otHours: window.prompt('Overtime hours', record.otHours) ?? record.otHours,
-      allowances: window.prompt('Allowances', record.allowances) ?? record.allowances,
-      bonus: window.prompt('Bonus', record.bonus) ?? record.bonus,
-      advanceDeduction: window.prompt('Advance deduction', record.advanceDeduction) ?? record.advanceDeduction,
-      otherDeductions: window.prompt('Other deductions', record.otherDeductions) ?? record.otherDeductions
-    };
+    const fields = [
+      ['daysWorked', 'Days worked'],
+      ['piecesDone', 'Pieces completed'],
+      ['otHours', 'Overtime hours'],
+      ['allowances', 'Allowances'],
+      ['bonus', 'Bonus'],
+      ['advanceDeduction', 'Advance deduction'],
+      ['otherDeductions', 'Other deductions']
+    ];
+    const values = {};
+
+    for (const [field, label] of fields) {
+      const value = window.prompt(label, record[field]);
+      if (value === null) {
+        return;
+      }
+      values[field] = value;
+    }
+
     try {
       await api.put(`/salaries/${record.id}`, values);
+      setMessage('Salary updated.');
       await load();
     } catch (requestError) {
       setError(getApiError(requestError, 'Failed to update salary'));
