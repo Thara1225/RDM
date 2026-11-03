@@ -144,6 +144,16 @@ function downloadExcel(reportData) {
       }))
     },
     {
+      name: 'Employee Payments',
+      rows: (reportData.employeePayments || []).map((row) => ({
+        Date: asDate(row.paidAt),
+        Employee: row.employee?.name || '-',
+        EmployeeID: row.employee?.empCode || '-',
+        Amount: asNumber(row.amount),
+        Note: row.notes || '-'
+      }))
+    },
+    {
       name: 'Balance Due',
       rows: (reportData.balanceDueByShop || []).map((row) => ({
         Shop: row.shopName || '-',
@@ -229,6 +239,19 @@ function downloadPdf(reportData, filters) {
 
   sectionTableToPdf(
     doc,
+    'Employee Payments',
+    ['Date', 'Employee', 'Employee ID', 'Amount', 'Note'],
+    (reportData.employeePayments || []).map((row) => [
+      asDate(row.paidAt),
+      row.employee?.name || '-',
+      row.employee?.empCode || '-',
+      asNumber(row.amount).toFixed(2),
+      row.notes || '-'
+    ])
+  );
+
+  sectionTableToPdf(
+    doc,
     'Current Stock',
     ['Material', 'Unit', 'Available', 'Minimum Level'],
     (reportData.stockSummary || []).map((row) => [
@@ -290,6 +313,7 @@ export default function ReportsPage({ token }) {
     products: [],
     shopWiseBills: [],
     paymentsReceived: [],
+    employeePayments: [],
     balanceDueByShop: [],
     mostUsedMaterials: [],
     mostProducedGarments: []
@@ -340,6 +364,21 @@ export default function ReportsPage({ token }) {
       'paymentTotal'
     ),
     [reportData.paymentsReceived]
+  );
+
+  const employeePaymentsByEmployee = useMemo(
+    () => aggregateByName(
+      reportData.employeePayments,
+      (row) => row.employee?.name,
+      (row) => asNumber(row.amount),
+      'paymentTotal'
+    ),
+    [reportData.employeePayments]
+  );
+
+  const totalEmployeePayments = useMemo(
+    () => (reportData.employeePayments || []).reduce((sum, row) => sum + asNumber(row.amount), 0),
+    [reportData.employeePayments]
   );
 
   const balanceDue = useMemo(
@@ -492,6 +531,10 @@ export default function ReportsPage({ token }) {
           <p className="text-xs text-slate-500">Balance Due</p>
           <p className="text-xl font-semibold text-slate-900">{totalBalance.toFixed(2)}</p>
         </div>
+        <div className="rounded-xl bg-white p-4 shadow">
+          <p className="text-xs text-slate-500">Employee Payments</p>
+          <p className="text-xl font-semibold text-slate-900">{totalEmployeePayments.toFixed(2)}</p>
+        </div>
       </section>
 
       <section className="rounded-xl bg-white p-6 shadow">
@@ -588,6 +631,20 @@ export default function ReportsPage({ token }) {
               </BarChart>
             </ResponsiveContainer>
           )}
+        </ChartCard>
+        <ChartCard title="Employee Payments (By Employee)">
+          {employeePaymentsByEmployee.length ? (
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={employeePaymentsByEmployee}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="name" />
+                <YAxis />
+                <Tooltip />
+                <Legend />
+                <Bar dataKey="paymentTotal" name="Total paid" fill="#2563eb" />
+              </BarChart>
+            </ResponsiveContainer>
+          ) : <EmptyChart />}
         </ChartCard>
 
         <ChartCard title="Balance Due By Shop">

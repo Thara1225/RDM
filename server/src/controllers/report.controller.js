@@ -36,6 +36,7 @@ async function getReports(req, res) {
   const cuttingsWhere = dateRangeWhere('cutDate', fromDate, toDate);
   const ordersWhere = dateRangeWhere('orderDate', fromDate, toDate);
   const paymentsWhere = dateRangeWhere('paymentDate', fromDate, toDate);
+  const employeePaymentsWhere = dateRangeWhere('paidAt', fromDate, toDate);
 
   const [
     purchases,
@@ -43,6 +44,7 @@ async function getReports(req, res) {
     stockSummary,
     shopOrders,
     paymentsReceived,
+    employeePayments,
     creditByShop,
     debitByShop,
     mostUsedMaterialsRaw,
@@ -88,6 +90,13 @@ async function getReports(req, res) {
         shop: { select: { id: true, name: true, shopCode: true } }
       },
       orderBy: { paymentDate: 'desc' }
+    }),
+    prisma.employeePayment.findMany({
+      where: employeePaymentsWhere,
+      include: {
+        employee: { select: { id: true, name: true, empCode: true, department: true } }
+      },
+      orderBy: { paidAt: 'desc' }
     }),
     prisma.shopOrder.groupBy({
       by: ['shopId'],
@@ -251,6 +260,7 @@ async function getReports(req, res) {
     stockSummary,
     shopWiseBills,
     paymentsReceived,
+    employeePayments,
     balanceDueByShop,
     products: productList,
     mostUsedMaterials,
