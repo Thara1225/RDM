@@ -2,7 +2,14 @@ const express = require('express');
 const { z } = require('zod');
 const validate = require('../middlewares/validate');
 const asyncHandler = require('../utils/asyncHandler');
-const { listSalaries, generateSalaries, updateSalary, updateSalaryStatus } = require('../controllers/salary.controller');
+const {
+  listSalaries,
+  listPayments,
+  createPayment,
+  generateSalaries,
+  updateSalary,
+  updateSalaryStatus
+} = require('../controllers/salary.controller');
 
 const router = express.Router();
 const monthYearSchema = z.object({
@@ -22,8 +29,15 @@ const updateSchema = z.object({
 });
 const statusSchema = z.object({ status: z.enum(['draft', 'approved', 'paid']) });
 const idSchema = z.object({ id: z.coerce.number().int().positive() });
+const paymentSchema = monthYearSchema.extend({
+  employeeId: z.coerce.number().int().positive(),
+  amount: z.coerce.number().positive(),
+  notes: z.string().trim().max(255).optional()
+});
 
 router.get('/', validate(listSchema, 'query'), asyncHandler(listSalaries));
+router.get('/payments', validate(listSchema, 'query'), asyncHandler(listPayments));
+router.post('/payments', validate(paymentSchema), asyncHandler(createPayment));
 router.post('/generate', validate(monthYearSchema), asyncHandler(generateSalaries));
 router.put('/:id', validate(idSchema, 'params'), validate(updateSchema), asyncHandler(updateSalary));
 router.patch('/:id/status', validate(idSchema, 'params'), validate(statusSchema), asyncHandler(updateSalaryStatus));

@@ -1,3 +1,4 @@
+  const [payroll, setPayroll] = useState({ records: [], totals: {}, paymentCount: 0 });
 import { useEffect, useState } from 'react';
 import api from '../services/api';
 import { getApiError } from '../utils/apiError';
@@ -18,18 +19,38 @@ export default function EmployeePaymentsPage({ token }) {
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
   const [isSaving, setIsSaving] = useState(false);
+  const [paymentForm, setPaymentForm] = useState({ employeeId: '', amount: '', notes: '' });
 
   async function load() {
     setError('');
     try {
       const [employeeResponse, salaryResponse] = await Promise.all([
         api.get('/employees'),
-        api.get('/salaries', { params: period })
+        api.get('/salaries/payments', { params: period })
       ]);
       setEmployees(employeeResponse.data);
       setPayroll(salaryResponse.data);
     } catch (requestError) {
       setError(getApiError(requestError, 'Failed to load employee payments'));
+    }
+  }
+
+  async function addPayment(event) {
+    event.preventDefault();
+    setError('');
+    setMessage('');
+    try {
+      await api.post('/salaries/payments', {
+        ...period,
+        employeeId: Number(paymentForm.employeeId),
+        amount: Number(paymentForm.amount),
+        notes: paymentForm.notes || undefined
+      });
+      setPaymentForm({ employeeId: '', amount: '', notes: '' });
+      setMessage('Payment added. You can add another payment for the same employee this month.');
+      await load();
+    } catch (requestError) {
+      setError(getApiError(requestError, 'Failed to add payment'));
     }
   }
 
@@ -128,7 +149,6 @@ export default function EmployeePaymentsPage({ token }) {
               {Array.from({ length: 12 }, (_, index) => <option key={index + 1} value={index + 1}>{new Date(2000, index).toLocaleString(undefined, { month: 'long' })}</option>)}
             </select>
             <input type="number" value={period.year} onChange={(event) => setPeriod({ ...period, year: Number(event.target.value) })} className="w-24 rounded-lg border px-3 py-2" />
-            <button type="button" onClick={generateSalaries} className="rounded-lg bg-slate-900 px-4 py-2 font-semibold text-white">Generate salaries</button>
           </div>
         </div>
         {message ? <p className="mt-4 rounded-lg bg-green-50 p-3 text-sm text-green-700">{message}</p> : null}
@@ -137,11 +157,22 @@ export default function EmployeePaymentsPage({ token }) {
 
       <div className="grid gap-4 sm:grid-cols-3">
         {[
-          ['Net payroll', payroll.totals.netPay],
-          ['Gross payroll', payroll.totals.grossPay],
-          ['Employees in payroll', payroll.count]
-        ].map(([label, value]) => <div key={label} className="rounded-xl bg-white p-5 shadow"><p className="text-sm text-slate-600">{label}</p><p className="mt-2 text-2xl font-bold text-slate-900">{label.includes('Employees') ? value : amount(value)}</p></div>)}
+          ['Total paid this month', payroll.totals.amount],
+          ['Employees paid', payroll.records.length],
+          ['Payment entries', payroll.paymentCount]
+        ].map(([label, value]) => <div key={label} className="rounded-xl bg-white p-5 shadow"><p className="text-sm text-slate-600">{label}</p><p className="mt-2 text-2xl font-bold text-slate-900">{label === 'Total paid this month' ? amount(value) : value}</p></div>)}
       </div>
+
+      <form onSubmit={addPayment} className="rounded-xl bg-white p-5 shadow">
+        <h2 className="text-lg font-bold text-slate-900">Add employee payment</h2>
+        <p className="mt-1 text-sm text-slate-600">Record only the amount paid. The same employee can receive multiple payments in one month.</p>
+        <div className="mt-4 grid gap-3 md:grid-cols-[1fr_180px_1fr_auto] md:items-end">
+          <label className="grid gap-1 text-sm font-semibold text-slate-700">Employee<select required value={paymentForm.employeeId} onChange={(event) => setPaymentForm({ ...paymentForm, employeeId: event.target.value })} className="rounded-lg border px-3 py-2"><option value="">Select employee</option>{employees.filter((employee) => employee.active).map((employee) => <option key={employee.id} value={employee.id}>{employee.name} ({employee.empCode})</option>)}</select></label>
+          <label className="grid gap-1 text-sm font-semibold text-slate-700">Amount<input required min="0.01" step="0.01" type="number" value={paymentForm.amount} onChange={(event) => setPaymentForm({ ...paymentForm, amount: event.target.value })} className="rounded-lg border px-3 py-2" /></label>
+          <label className="grid gap-1 text-sm font-semibold text-slate-700">Note (optional)<input value={paymentForm.notes} onChange={(event) => setPaymentForm({ ...paymentForm, notes: event.target.value })} className="rounded-lg border px-3 py-2" /></label>
+          <button className="rounded-lg bg-slate-900 px-4 py-2 font-semibold text-white">Add payment</button>
+        </div>
+      </form>
 
       <div className="grid gap-5 lg:grid-cols-[320px_1fr]">
         <form onSubmit={saveEmployee} className="rounded-xl bg-white p-5 shadow">
@@ -158,8 +189,8 @@ export default function EmployeePaymentsPage({ token }) {
         </form>
 
         <div className="rounded-xl bg-white p-5 shadow">
-          <h2 className="text-lg font-bold text-slate-900">Monthly salaries</h2>
-          <div className="mt-4 overflow-x-auto"><table className="w-full min-w-[900px] text-left text-sm"><thead><tr className="border-b text-xs uppercase text-slate-500"><th className="p-3">Employee</th><th className="p-3">Basic</th><th className="p-3">OT</th><th className="p-3">Deductions</th><th className="p-3">Net salary</th><th className="p-3">Status</th><th className="p-3">Actions</th></tr></thead><tbody>{payroll.records.map((record) => <tr key={record.id} className="border-b"><td className="p-3"><strong>{record.employee.name}</strong><br /><span className="text-xs text-slate-500">{record.employee.empCode} · {record.employee.department || 'General'}</span></td><td className="p-3">{amount(record.basicPay)}</td><td className="p-3">{amount(record.otPay)}</td><td className="p-3">{amount(Number(record.epfDeduction) + Number(record.advanceDeduction) + Number(record.otherDeductions))}</td><td className="p-3 font-bold">{amount(record.netPay)}</td><td className="p-3 capitalize">{record.status}</td><td className="p-3"><div className="flex flex-wrap gap-2">{record.status === 'draft' ? <button type="button" onClick={() => editSalary(record)} className="text-blue-700">Edit</button> : null}{record.status === 'draft' ? <button type="button" onClick={() => updateStatus(record, 'approved')} className="text-amber-700">Approve</button> : null}{record.status === 'approved' ? <button type="button" onClick={() => updateStatus(record, 'paid')} className="text-green-700">Mark paid</button> : null}</div></td></tr>)}</tbody></table>{payroll.records.length === 0 ? <p className="p-6 text-center text-sm text-slate-500">Add active employees, then generate salaries for this month.</p> : null}</div>
+          <h2 className="text-lg font-bold text-slate-900">Monthly payments by employee</h2>
+          <div className="mt-4 overflow-x-auto"><table className="w-full min-w-[700px] text-left text-sm"><thead><tr className="border-b text-xs uppercase text-slate-500"><th className="p-3">Employee</th><th className="p-3">Payments this month</th><th className="p-3">Total paid</th></tr></thead><tbody>{payroll.records.map((record) => <tr key={record.employee.id} className="border-b"><td className="p-3"><strong>{record.employee.name}</strong><br /><span className="text-xs text-slate-500">{record.employee.empCode} · {record.employee.department || 'General'}</span></td><td className="p-3">{record.payments.map((payment) => <div key={payment.id}>{amount(payment.amount)} <span className="text-xs text-slate-500">({new Date(payment.paidAt).toLocaleDateString()})</span></div>)}</td><td className="p-3 font-bold">{amount(record.total)}</td></tr>)}</tbody></table>{payroll.records.length === 0 ? <p className="p-6 text-center text-sm text-slate-500">Add a payment to see the monthly employee totals.</p> : null}</div>
         </div>
       </div>
 

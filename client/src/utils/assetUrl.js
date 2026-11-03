@@ -1,6 +1,6 @@
 const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
 
-let apiOrigin = 'http://localhost:5000';
+let apiOrigin = 'http://localhost:5001';
 try {
   apiOrigin = new URL(apiBaseUrl).origin;
 } catch (_error) {

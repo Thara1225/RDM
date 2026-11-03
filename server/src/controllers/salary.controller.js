@@ -76,6 +76,57 @@ async function listSalaries(req, res) {
   return res.json({ records, totals, count: records.length });
 }
 
+async function listPayments(req, res) {
+  const month = Number(req.query.month);
+  const year = Number(req.query.year);
+  const where = { month, year };
+  if (req.query.q) {
+    where.employee = {
+      OR: [
+        { name: { contains: req.query.q, mode: 'insensitive' } },
+        { empCode: { contains: req.query.q, mode: 'insensitive' } }
+      ]
+    };
+  }
+
+  const payments = await prisma.employeePayment.findMany({
+    where,
+    include: { employee: true },
+    orderBy: [{ paidAt: 'desc' }, { id: 'desc' }]
+  });
+  const byEmployee = new Map();
+  for (const payment of payments) {
+    const current = byEmployee.get(payment.employeeId) || {
+      employee: payment.employee,
+      total: 0,
+      payments: []
+    };
+    current.total += Number(payment.amount);
+    current.payments.push(payment);
+    byEmployee.set(payment.employeeId, current);
+  }
+
+  return res.json({
+    records: Array.from(byEmployee.values()).sort((left, right) => left.employee.name.localeCompare(right.employee.name)),
+    totals: { amount: payments.reduce((total, payment) => total + Number(payment.amount), 0) },
+    paymentCount: payments.length
+  });
+}
+
+async function createPayment(req, res) {
+  const payment = await prisma.employeePayment.create({
+    data: {
+      employeeId: Number(req.body.employeeId),
+      month: Number(req.body.month),
+      year: Number(req.body.year),
+      amount: Number(req.body.amount),
+      notes: req.body.notes || null
+    },
+    include: { employee: true }
+  });
+  return res.status(201).json(payment);
+}
+
 async function generateSalaries(req, res) {
   const { month, year } = req.body;
   const employees = await prisma.employee.findMany({ where: { active: true } });
@@ -117,4 +168,11 @@ async function updateSalaryStatus(req, res) {
   return res.json(updated);
 }
 
-module.exports = { listSalaries, generateSalaries, updateSalary, updateSalaryStatus };
+module.exports = {
+  listSalaries,
+  listPayments,
+  createPayment,
+  generateSalaries,
+  updateSalary,
+  updateSalaryStatus
+};
