@@ -1,4 +1,3 @@
-  const [payroll, setPayroll] = useState({ records: [], totals: {}, paymentCount: 0 });
 import { useEffect, useState } from 'react';
 import api from '../services/api';
 import { getApiError } from '../utils/apiError';
