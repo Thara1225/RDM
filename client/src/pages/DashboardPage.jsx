@@ -12,7 +12,8 @@ export default function DashboardPage({ token }) {
     products: 0,
     purchases: 0,
     cuttings: 0,
-    stock: 0
+    stock: 0,
+    employees: 0
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -27,14 +28,15 @@ export default function DashboardPage({ token }) {
     setLoading(true);
 
     try {
-      const [suppliersRes, shopsRes, materialsRes, productsRes, purchasesRes, cuttingsRes, stockRes] = await Promise.all([
+      const [suppliersRes, shopsRes, materialsRes, productsRes, purchasesRes, cuttingsRes, stockRes, employeesRes] = await Promise.all([
         api.get('/suppliers'),
         api.get('/shops'),
         api.get('/materials'),
         api.get('/products'),
         api.get('/purchases'),
         api.get('/cuttings'),
-        api.get('/stock')
+        api.get('/stock'),
+        api.get('/employees')
       ]);
 
       setStats({
@@ -44,7 +46,8 @@ export default function DashboardPage({ token }) {
         products: productsRes.data.length,
         purchases: purchasesRes.data.length,
         cuttings: cuttingsRes.data.length,
-        stock: stockRes.data.length
+        stock: stockRes.data.length,
+        employees: employeesRes.data.length
       });
 
       const flagged = (stockRes.data || []).filter((row) => Number(row.availableQuantity || 0) <= Number(row.minStockLevel || 0));
@@ -87,13 +90,14 @@ export default function DashboardPage({ token }) {
     { label: 'Products', value: stats.products, path: '/products', color: 'stat-card-rose' },
     { label: 'Purchases', value: stats.purchases, path: '/purchases', color: 'stat-card-gold' },
     { label: 'Cuttings', value: stats.cuttings, path: '/cuttings', color: 'stat-card-peach' },
-    { label: 'Stock Items', value: stats.stock, path: '/stock', color: 'stat-card-blue' }
+    { label: 'Stock Items', value: stats.stock, path: '/stock', color: 'stat-card-blue' },
+    { label: 'Employees', value: stats.employees, path: '/employee-payments', color: 'stat-card-green' }
   ];
 
   return (
     <div className="dashboard-page">
       <header className="dashboard-hero">
-        <h1>Hello, Designer! <span aria-hidden="true">👋</span></h1>
+        <h1>Hello, Rasith..!! <span aria-hidden="true">👋</span></h1>
         <p>Here's a summary of your inventory and operations.</p>
       </header>
 
