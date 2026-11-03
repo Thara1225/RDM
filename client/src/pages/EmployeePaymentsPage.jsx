@@ -86,6 +86,22 @@ export default function EmployeePaymentsPage({ token }) {
     }
   }
 
+  async function deletePayment(payment) {
+    if (!window.confirm(`Delete the ${amount(payment.amount)} payment from ${payment.employee?.name || 'this employee'}?`)) {
+      return;
+    }
+
+    setError('');
+    setMessage('');
+    try {
+      await api.delete(`/salaries/payments/${payment.id}`);
+      setMessage('Payment deleted.');
+      await load();
+    } catch (requestError) {
+      setError(getApiError(requestError, 'Failed to delete payment'));
+    }
+  }
+
   useEffect(() => { load(); }, [period.month, period.year, token]);
 
   function updateEmployeeField(event) {
@@ -199,10 +215,10 @@ export default function EmployeePaymentsPage({ token }) {
       <form onSubmit={addPayment} className="rounded-xl bg-white p-5 shadow">
         <h2 className="text-lg font-bold text-slate-900">Add employee payment</h2>
         <p className="mt-1 text-sm text-slate-600">Record only the amount paid. The same employee can receive multiple payments in one month.</p>
-        <div className="mt-4 grid gap-3 md:grid-cols-[1fr_180px_1fr_auto] md:items-end">
-          <label className="grid gap-1 text-sm font-semibold text-slate-700">Employee<select required value={paymentForm.employeeId} onChange={(event) => setPaymentForm({ ...paymentForm, employeeId: event.target.value })} className="rounded-lg border px-3 py-2"><option value="">Select employee</option>{employees.filter((employee) => employee.active).map((employee) => <option key={employee.id} value={employee.id}>{employee.name} ({employee.empCode})</option>)}</select></label>
-          <label className="grid gap-1 text-sm font-semibold text-slate-700">Amount<input required min="0.01" step="0.01" type="number" value={paymentForm.amount} onChange={(event) => setPaymentForm({ ...paymentForm, amount: event.target.value })} className="rounded-lg border px-3 py-2" /></label>
-          <label className="grid gap-1 text-sm font-semibold text-slate-700">Note (optional)<input value={paymentForm.notes} onChange={(event) => setPaymentForm({ ...paymentForm, notes: event.target.value })} className="rounded-lg border px-3 py-2" /></label>
+        <div className="mt-4 grid gap-3 md:grid-cols-[1fr_200px_1fr_auto] md:items-end">
+          <label className="grid gap-1 text-sm font-semibold text-slate-700">Employee<select required value={paymentForm.employeeId} onChange={(event) => setPaymentForm({ ...paymentForm, employeeId: event.target.value })} className="rounded-lg border px-3 py-2"><option value="">Choose an employee</option>{employees.filter((employee) => employee.active).map((employee) => <option key={employee.id} value={employee.id}>{employee.name} ({employee.empCode})</option>)}</select></label>
+          <label className="grid gap-1 text-sm font-semibold text-slate-700">Payment amount<input required min="0.01" step="0.01" type="number" placeholder="e.g. 20000" value={paymentForm.amount} onChange={(event) => setPaymentForm({ ...paymentForm, amount: event.target.value })} className="rounded-lg border px-3 py-2" /></label>
+          <label className="grid gap-1 text-sm font-semibold text-slate-700">Payment note <span className="font-normal text-slate-500">(optional)</span><input placeholder="e.g. First payment" value={paymentForm.notes} onChange={(event) => setPaymentForm({ ...paymentForm, notes: event.target.value })} className="rounded-lg border px-3 py-2" /></label>
           <button className="rounded-lg bg-slate-900 px-4 py-2 font-semibold text-white">Add payment</button>
         </div>
       </form>
@@ -223,7 +239,7 @@ export default function EmployeePaymentsPage({ token }) {
 
         <div className="rounded-xl bg-white p-5 shadow">
           <h2 className="text-lg font-bold text-slate-900">Monthly payments by employee</h2>
-          <div className="mt-4 overflow-x-auto"><table className="w-full min-w-[700px] text-left text-sm"><thead><tr className="border-b text-xs uppercase text-slate-500"><th className="p-3">Employee</th><th className="p-3">Payments this month</th><th className="p-3">Total paid</th></tr></thead><tbody>{payroll.records.map((record) => <tr key={record.employee.id} className="border-b"><td className="p-3"><strong>{record.employee.name}</strong><br /><span className="text-xs text-slate-500">{record.employee.empCode} · {record.employee.department || 'General'}</span></td><td className="p-3">{record.payments.map((payment) => <div key={payment.id}>{amount(payment.amount)} <span className="text-xs text-slate-500">({new Date(payment.paidAt).toLocaleDateString()})</span></div>)}</td><td className="p-3 font-bold">{amount(record.total)}</td></tr>)}</tbody></table>{payroll.records.length === 0 ? <p className="p-6 text-center text-sm text-slate-500">Add a payment to see the monthly employee totals.</p> : null}</div>
+          <div className="mt-4 overflow-x-auto"><table className="w-full min-w-[850px] text-left text-sm"><thead><tr className="border-b text-xs uppercase text-slate-500"><th className="p-3">Employee</th><th className="p-3">Payment history</th><th className="p-3">Monthly total</th></tr></thead><tbody>{payroll.records.map((record) => <tr key={record.employee.id} className="border-b"><td className="p-3"><strong>{record.employee.name}</strong><br /><span className="text-xs text-slate-500">{record.employee.empCode} · {record.employee.department || 'General'}</span></td><td className="p-3">{record.payments.map((payment) => <div key={payment.id} className="flex items-center gap-3 py-1"><span>{amount(payment.amount)} <span className="text-xs text-slate-500">({new Date(payment.paidAt).toLocaleDateString()}{payment.notes ? ` · ${payment.notes}` : ''})</span></span><button type="button" onClick={() => deletePayment({ ...payment, employee: record.employee })} className="text-xs font-semibold text-red-600 hover:text-red-800">Delete</button></div>)}</td><td className="p-3 font-bold">{amount(record.total)}</td></tr>)}</tbody></table>{payroll.records.length === 0 ? <p className="p-6 text-center text-sm text-slate-500">Add a payment to see the monthly employee totals.</p> : null}</div>
         </div>
       </div>
 

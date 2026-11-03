@@ -127,6 +127,15 @@ async function createPayment(req, res) {
   return res.status(201).json(payment);
 }
 
+async function deletePayment(req, res) {
+  const id = Number(req.params.id);
+  const payment = await prisma.employeePayment.findUnique({ where: { id } });
+  if (!payment) throw new ApiError(404, 'Employee payment not found');
+
+  await prisma.employeePayment.delete({ where: { id } });
+  return res.json({ message: 'Employee payment deleted' });
+}
+
 async function generateSalaries(req, res) {
   const { month, year } = req.body;
   const employees = await prisma.employee.findMany({ where: { active: true } });
@@ -172,6 +181,7 @@ module.exports = {
   listSalaries,
   listPayments,
   createPayment,
+  deletePayment,
   generateSalaries,
   updateSalary,
   updateSalaryStatus

@@ -6,6 +6,7 @@ const {
   listSalaries,
   listPayments,
   createPayment,
+  deletePayment,
   generateSalaries,
   updateSalary,
   updateSalaryStatus
@@ -38,6 +39,7 @@ const paymentSchema = monthYearSchema.extend({
 router.get('/', validate(listSchema, 'query'), asyncHandler(listSalaries));
 router.get('/payments', validate(listSchema, 'query'), asyncHandler(listPayments));
 router.post('/payments', validate(paymentSchema), asyncHandler(createPayment));
+router.delete('/payments/:id', validate(idSchema, 'params'), asyncHandler(deletePayment));
 router.post('/generate', validate(monthYearSchema), asyncHandler(generateSalaries));
 router.put('/:id', validate(idSchema, 'params'), validate(updateSchema), asyncHandler(updateSalary));
 router.patch('/:id/status', validate(idSchema, 'params'), validate(statusSchema), asyncHandler(updateSalaryStatus));
