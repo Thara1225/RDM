@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import * as XLSX from 'xlsx';
 import api from '../services/api';
 import { getApiError } from '../utils/apiError';
 
@@ -9,8 +10,40 @@ function amount(value) {
   return Number(value || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
+function downloadMonthlyPayments(period, payroll) {
+  const monthName = new Date(2000, period.month - 1).toLocaleString(undefined, { month: 'long' });
+  const summaryRows = payroll.records.map((record) => ({
+    Employee: record.employee.name,
+    'Employee ID': record.employee.empCode,
+    Department: record.employee.department || 'General',
+    'Payments Count': record.payments.length,
+    'Total Paid': Number(record.total)
+  }));
+  summaryRows.push({
+    Employee: 'TOTAL',
+    'Employee ID': '',
+    Department: '',
+    'Payments Count': payroll.paymentCount,
+    'Total Paid': Number(payroll.totals.amount || 0)
+  });
+
+  const detailRows = payroll.records.flatMap((record) => record.payments.map((payment) => ({
+    Employee: record.employee.name,
+    'Employee ID': record.employee.empCode,
+    Department: record.employee.department || 'General',
+    Amount: Number(payment.amount),
+    'Paid Date': new Date(payment.paidAt).toLocaleDateString(),
+    Note: payment.notes || ''
+  })));
+  const workbook = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(workbook, XLSX.utils.json_to_sheet(summaryRows), 'Monthly Summary');
+  XLSX.utils.book_append_sheet(workbook, XLSX.utils.json_to_sheet(detailRows), 'Payment Details');
+  XLSX.writeFile(workbook, `rdm-employee-payments-${period.year}-${String(period.month).padStart(2, '0')}.xlsx`);
+}
+
 export default function EmployeePaymentsPage({ token }) {
   const [period, setPeriod] = useState({ month: currentDate.getMonth() + 1, year: currentDate.getFullYear() });
+  const monthName = new Date(2000, period.month - 1).toLocaleString(undefined, { month: 'long' });
   const [employees, setEmployees] = useState([]);
   const [payroll, setPayroll] = useState({ records: [], totals: {}, count: 0 });
   const [employeeForm, setEmployeeForm] = useState(emptyEmployee);
@@ -148,6 +181,7 @@ export default function EmployeePaymentsPage({ token }) {
               {Array.from({ length: 12 }, (_, index) => <option key={index + 1} value={index + 1}>{new Date(2000, index).toLocaleString(undefined, { month: 'long' })}</option>)}
             </select>
             <input type="number" value={period.year} onChange={(event) => setPeriod({ ...period, year: Number(event.target.value) })} className="w-24 rounded-lg border px-3 py-2" />
+            <button type="button" onClick={() => downloadMonthlyPayments(period, payroll)} disabled={!payroll.paymentCount} className="rounded-lg border border-blue-300 px-4 py-2 font-semibold text-blue-700 disabled:cursor-not-allowed disabled:opacity-50">Download {monthName}</button>
           </div>
         </div>
         {message ? <p className="mt-4 rounded-lg bg-green-50 p-3 text-sm text-green-700">{message}</p> : null}
